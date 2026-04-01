@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib import messages
+from django.conf import settings
 from .models import VideoCall, VideoCallRating
 import uuid
 
@@ -62,6 +63,7 @@ def video_room(request, room_id):
     context = {
         'call': call,
         'room_id': room_id,
+        'webrtc_ice_servers': settings.WEBRTC_ICE_SERVERS,
     }
     return render(request, 'video/video_room.html', context)
 

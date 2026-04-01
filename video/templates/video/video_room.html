@@ -157,6 +157,8 @@
     </div>
 </div>
 
+{{ webrtc_ice_servers|json_script:"webrtc-ice-servers" }}
+
 <script>
     const roomId = "{{ call.room_id }}";
     const username = "{{ request.user.username }}";
@@ -168,12 +170,9 @@
         .split('; ')
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1] || '';
+    const iceServers = JSON.parse(document.getElementById('webrtc-ice-servers').textContent);
     const rtcConfig = {
-        iceServers: [
-            {
-                urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']
-            }
-        ]
+        iceServers
     };
     
     // WebSocket connection for whiteboard sharing
@@ -301,6 +300,7 @@
     let remoteParticipantPresent = false;
     let pendingIceCandidates = [];
     let isMakingOffer = false;
+    let isRestartingIce = false;
 
     function setStateLabel(id, value) {
         const element = document.getElementById(id);
@@ -400,6 +400,11 @@
 
         peerConnection.oniceconnectionstatechange = () => {
             updatePeerStateLabels();
+            if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
+                setTimeout(() => {
+                    restartIceIfNeeded();
+                }, 300);
+            }
         };
 
         peerConnection.onicegatheringstatechange = () => {
@@ -408,6 +413,11 @@
 
         peerConnection.onconnectionstatechange = () => {
             updatePeerStateLabels();
+            if (peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'disconnected') {
+                setTimeout(() => {
+                    restartIceIfNeeded();
+                }, 300);
+            }
         };
 
         peerConnection.ontrack = event => {
@@ -432,6 +442,11 @@
     async function createAndSendOffer() {
         await ensurePeerConnection();
         await syncPeerConnectionTracks();
+
+        if (peerConnection.signalingState !== 'stable') {
+            return;
+        }
+
         isMakingOffer = true;
 
         try {
@@ -441,6 +456,26 @@
             hasSentOffer = true;
         } finally {
             isMakingOffer = false;
+        }
+    }
+
+    async function restartIceIfNeeded() {
+        if (!peerConnection || !remoteParticipantPresent || isMakingOffer || isRestartingIce) return;
+        if (peerConnection.signalingState !== 'stable') return;
+
+        const badStates = ['disconnected', 'failed'];
+        if (!badStates.includes(peerConnection.iceConnectionState) && !badStates.includes(peerConnection.connectionState)) {
+            return;
+        }
+
+        isRestartingIce = true;
+        try {
+            peerConnection.restartIce();
+            await createAndSendOffer();
+        } catch (error) {
+            console.error('ICE restart failed:', error);
+        } finally {
+            isRestartingIce = false;
         }
     }
 
@@ -813,6 +848,7 @@
         hasSentOffer = false;
         remoteParticipantPresent = false;
         isMakingOffer = false;
+        isRestartingIce = false;
 
         if (closeSocket && videoSocket && videoSocket.readyState !== WebSocket.CLOSED) {
             videoSocket.close();

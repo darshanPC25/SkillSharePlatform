@@ -4,6 +4,7 @@ Django settings for skill_swap project.
 
 from pathlib import Path
 import os
+import json
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -121,6 +122,24 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+WEBRTC_ICE_SERVERS = [
+    {
+        'urls': [
+            'stun:stun.l.google.com:19302',
+            'stun:stun1.l.google.com:19302',
+        ]
+    }
+]
+
+ice_servers_json = os.environ.get('WEBRTC_ICE_SERVERS_JSON', '').strip()
+if ice_servers_json:
+    try:
+        parsed_ice_servers = json.loads(ice_servers_json)
+        if isinstance(parsed_ice_servers, list) and parsed_ice_servers:
+            WEBRTC_ICE_SERVERS = parsed_ice_servers
+    except json.JSONDecodeError:
+        pass
 
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
 
