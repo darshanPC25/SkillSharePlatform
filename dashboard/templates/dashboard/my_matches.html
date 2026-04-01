@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}My Matches - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <h1 class="text-3xl font-bold text-blue-400">My Matches</h1>
+    
+    <!-- Received Requests -->
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <h2 class="text-2xl font-bold mb-4 text-green-400">Received Requests</h2>
+        <div class="space-y-4">
+            {% for match in received_matches %}
+            <div class="bg-dark-bg border border-dark-border rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">{{ match.user.username }}</h3>
+                        <p class="text-sm text-gray-400">Skill: {{ match.skill.name }}</p>
+                        <p class="text-sm text-gray-500">{{ match.created_at|date:"M d, Y" }}</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 rounded
+                            {% if match.status == 'pending' %}bg-yellow-900 text-yellow-200
+                            {% elif match.status == 'accepted' %}bg-green-900 text-green-200
+                            {% else %}bg-red-900 text-red-200{% endif %}">
+                            {{ match.get_status_display }}
+                        </span>
+                    </div>
+                    {% if match.status == 'pending' %}
+                    <div class="flex space-x-2">
+                        <a href="{% url 'dashboard:accept_match' match.id %}" 
+                           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                            Accept
+                        </a>
+                        <a href="{% url 'dashboard:reject_match' match.id %}" 
+                           class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
+                            Reject
+                        </a>
+                    </div>
+                    {% elif match.status == 'accepted' %}
+                    <a href="{% url 'chat:start_chat' match.user.id %}" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+                        Start Chat
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-center py-4">No received requests.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Sent Requests -->
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <h2 class="text-2xl font-bold mb-4 text-blue-400">Sent Requests</h2>
+        <div class="space-y-4">
+            {% for match in sent_matches %}
+            <div class="bg-dark-bg border border-dark-border rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">{{ match.matched_user.username }}</h3>
+                        <p class="text-sm text-gray-400">Skill: {{ match.skill.name }}</p>
+                        <p class="text-sm text-gray-500">{{ match.created_at|date:"M d, Y" }}</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 rounded
+                            {% if match.status == 'pending' %}bg-yellow-900 text-yellow-200
+                            {% elif match.status == 'accepted' %}bg-green-900 text-green-200
+                            {% else %}bg-red-900 text-red-200{% endif %}">
+                            {{ match.get_status_display }}
+                        </span>
+                    </div>
+                    {% if match.status == 'pending' %}
+                    <a href="{% url 'dashboard:cancel_match' match.id %}" 
+                       class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm"
+                       onclick="return confirm('Are you sure you want to cancel this request?');">
+                        Cancel Request
+                    </a>
+                    {% elif match.status == 'accepted' %}
+                    <a href="{% url 'chat:start_chat' match.matched_user.id %}" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+                        Start Chat
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-center py-4">No sent requests.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Video Calls - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-blue-400 mb-8">Video Call History</h1>
+    
+    <div class="bg-dark-card rounded-lg shadow-xl border border-dark-border">
+        <div class="divide-y divide-dark-border">
+            {% for call in calls %}
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">
+                            {% if call.caller == request.user %}
+                                Call to {{ call.receiver.username }}
+                            {% else %}
+                                Call from {{ call.caller.username }}
+                            {% endif %}
+                        </h3>
+                        <p class="text-sm text-gray-400">{{ call.started_at|date:"M d, Y g:i A" }}</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 rounded
+                            {% if call.status == 'active' %}bg-green-900 text-green-200
+                            {% elif call.status == 'ended' %}bg-gray-700 text-gray-300
+                            {% elif call.status == 'missed' %}bg-red-900 text-red-200
+                            {% else %}bg-yellow-900 text-yellow-200{% endif %}">
+                            {{ call.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        {% if call.status == 'active' %}
+                        <a href="{% url 'video:video_room' call.room_id %}" 
+                           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                            Join Call
+                        </a>
+                        {% elif call.status == 'ended' %}
+                            {% if call.id in rated_call_ids %}
+                            <span class="bg-green-900 border border-green-700 text-green-200 px-3 py-1 rounded-md text-xs">
+                                Rated
+                            </span>
+                            {% else %}
+                            <details class="w-full">
+                                <summary class="cursor-pointer list-none bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm text-center">
+                                    Rate This Call
+                                </summary>
+                                <form method="post" action="{% url 'video:submit_call_rating' call.room_id %}" class="mt-3 space-y-2 bg-dark-bg border border-dark-border p-3 rounded-md">
+                                    {% csrf_token %}
+                                    <div>
+                                        <label class="block text-xs text-gray-300 mb-1">Teaching (1-5)</label>
+                                        <select name="teaching_rating" class="w-full bg-dark-card border border-dark-border rounded px-2 py-1 text-sm text-gray-100" required>
+                                            <option value="">Select</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-300 mb-1">Learning (1-5)</label>
+                                        <select name="learning_rating" class="w-full bg-dark-card border border-dark-border rounded px-2 py-1 text-sm text-gray-100" required>
+                                            <option value="">Select</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-sm">
+                                        Submit Rating
+                                    </button>
+                                </form>
+                            </details>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center text-gray-400">
+                No video call history.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

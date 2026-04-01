@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Skill - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-gray-800 rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-white mb-8">Add a Skill</h1>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="id_name" class="block text-sm font-medium text-gray-300 mb-2">Skill Name *</label>
+                {{ form.name }}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_skill_type" class="block text-sm font-medium text-gray-300 mb-2">Skill Type *</label>
+                    {{ form.skill_type }}
+                </div>
+                
+                <div>
+                    <label for="id_level" class="block text-sm font-medium text-gray-300 mb-2">Proficiency Level *</label>
+                    {{ form.level }}
+                </div>
+            </div>
+            
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                {{ form.description }}
+            </div>
+            
+            <div class="space-y-3">
+                <label class="block text-sm font-medium text-gray-300 mb-2">What do you want to do with this skill?</label>
+                <div class="flex items-center space-x-2">
+                    {{ form.can_teach }}
+                    <label for="id_can_teach" class="text-gray-300 ml-2">I can teach this skill</label>
+                </div>
+                <div class="flex items-center space-x-2">
+                    {{ form.want_to_learn }}
+                    <label for="id_want_to_learn" class="text-gray-300 ml-2">I want to learn this skill</label>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'users:profile' %}" class="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-200">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>Add Skill
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

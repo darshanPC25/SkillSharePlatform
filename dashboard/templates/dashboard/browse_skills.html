@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Skills - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-3xl font-bold text-blue-400">Browse Skills</h1>
+    
+    <!-- Filters -->
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-64">
+                <input type="text" name="search" value="{{ search }}" placeholder="Search skills..." 
+                       class="w-full bg-dark-bg border border-dark-border rounded-md px-4 py-2 text-gray-100">
+            </div>
+            <select name="type" class="bg-dark-bg border border-dark-border rounded-md px-4 py-2 text-gray-100">
+                <option value="">All Types</option>
+                <option value="technical" {% if skill_type == 'technical' %}selected{% endif %}>Technical</option>
+                <option value="non_technical" {% if skill_type == 'non_technical' %}selected{% endif %}>Non-Technical</option>
+            </select>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+                Filter
+            </button>
+        </form>
+    </div>
+    
+    <!-- Skills Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for skill in skills %}
+        <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border hover:border-blue-500 transition">
+            <h3 class="text-xl font-bold text-white mb-2">{{ skill.name }}</h3>
+            <p class="text-sm text-gray-400 mb-2">by {{ skill.user.username }}</p>
+
+            {% if skill.rating_summary %}
+            <div class="mb-3 text-xs text-gray-300 space-y-1">
+                <p>
+                    Avg Teaching: <span class="text-yellow-300 font-semibold">{{ skill.rating_summary.avg_teaching }}/5</span>
+                </p>
+                <p>
+                    Avg Learning: <span class="text-yellow-300 font-semibold">{{ skill.rating_summary.avg_learning }}/5</span>
+                    <span class="text-gray-500">({{ skill.rating_summary.total_ratings }} ratings)</span>
+                </p>
+            </div>
+            {% else %}
+            <p class="text-xs text-gray-500 mb-3">No ratings yet</p>
+            {% endif %}
+
+            <p class="text-sm text-gray-300 mb-4">{{ skill.description|truncatewords:15 }}</p>
+            
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">
+                    {{ skill.get_skill_type_display }}
+                </span>
+                <span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">
+                    {{ skill.get_level_display }}
+                </span>
+                {% if skill.can_teach %}
+                <span class="bg-green-900 text-green-200 text-xs px-2 py-1 rounded">Can Teach</span>
+                {% endif %}
+            </div>
+            
+            <div class="flex space-x-2">
+                {% if skill.user.id in connected_users %}
+                <div class="flex-1 bg-green-900 border border-green-700 text-green-200 text-center py-2 rounded-md text-sm">
+                    ✓ Already Connected
+                </div>
+                {% else %}
+                <a href="{% url 'dashboard:send_match' skill.id %}" 
+                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm">
+                    Connect
+                </a>
+                {% endif %}
+                <a href="{% url 'chat:start_chat' skill.user.id %}" 
+                   class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-md text-sm">
+                    Chat
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-400 col-span-3 text-center py-8">No skills found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    input, select {
+        background-color: #0f172a;
+        border: 1px solid #334155;
+        color: #f1f5f9;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Exams - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-blue-400">📄 Exams</h1>
+        <a href="{% url 'dashboard:create_exam' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+            + Create Exam
+        </a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-dark-border">
+        <nav class="-mb-px flex space-x-8">
+            <button onclick="showTab('upcoming')" id="tab-upcoming" class="tab-button border-b-2 border-blue-500 text-blue-400 py-4 px-1 text-sm font-medium">
+                📅 Upcoming Exams
+            </button>
+            <button onclick="showTab('created')" id="tab-created" class="tab-button border-b-2 border-transparent text-gray-400 hover:text-white py-4 px-1 text-sm font-medium">
+                📝 My Exams
+            </button>
+            <button onclick="showTab('results')" id="tab-results" class="tab-button border-b-2 border-transparent text-gray-400 hover:text-white py-4 px-1 text-sm font-medium">
+                📊 My Results
+            </button>
+        </nav>
+    </div>
+
+    <!-- Upcoming Exams Tab -->
+    <div id="content-upcoming" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for exam in upcoming_exams %}
+            <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border hover:border-blue-500 transition">
+                <h3 class="text-xl font-bold text-white mb-2">{{ exam.title }}</h3>
+                <p class="text-sm text-gray-400 mb-2">by {{ exam.creator.username }}</p>
+                <p class="text-sm text-gray-300 mb-4 line-clamp-3">{{ exam.description }}</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">
+                        {{ exam.get_difficulty_display }}
+                    </span>
+                    <span class="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                        {{ exam.questions.count }} Questions
+                    </span>
+                    <span class="bg-yellow-900 text-yellow-200 text-xs px-2 py-1 rounded">
+                        {{ exam.duration_minutes }} min
+                    </span>
+                </div>
+                
+                <div class="text-xs text-gray-400 mb-4">
+                    📅 {{ exam.scheduled_date|date:"M d, Y g:i A" }}<br>
+                    🎯 Pass: {{ exam.passing_score }}/{{ exam.total_points }}
+                </div>
+                
+                {% if exam.id in attempted_ids %}
+                <div class="bg-green-900 text-green-200 text-center py-2 rounded-md text-sm">
+                    ✓ Completed
+                </div>
+                {% else %}
+                <a href="{% url 'dashboard:take_exam' exam.id %}" 
+                   class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm">
+                    Take Exam
+                </a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-gray-400 col-span-3 text-center py-8">No upcoming exams available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- My Created Exams Tab -->
+    <div id="content-created" class="tab-content hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for exam in my_exams %}
+            <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+                <h3 class="text-xl font-bold text-white mb-2">{{ exam.title }}</h3>
+                <p class="text-sm text-gray-300 mb-4 line-clamp-3">{{ exam.description }}</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">
+                        {{ exam.get_difficulty_display }}
+                    </span>
+                    <span class="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                        {{ exam.questions.count }} Questions
+                    </span>
+                    <span class="{% if exam.is_active %}bg-green-900 text-green-200{% else %}bg-red-900 text-red-200{% endif %} text-xs px-2 py-1 rounded">
+                        {% if exam.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                
+                <div class="text-xs text-gray-400 mb-4">
+                    Scheduled: {{ exam.scheduled_date|date:"M d, Y g:i A" }}
+                </div>
+                
+                <a href="{% url 'dashboard:edit_exam' exam.id %}" 
+                   class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm">
+                    Edit
+                </a>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 col-span-3 text-center py-8">You haven't created any exams yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- My Results Tab -->
+    <div id="content-results" class="tab-content hidden">
+        <div class="space-y-4">
+            {% for attempt in my_attempts %}
+            <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">{{ attempt.exam.title }}</h3>
+                        <p class="text-sm text-gray-400 mb-2">Completed: {{ attempt.completed_at|date:"M d, Y g:i A" }}</p>
+                        {% if attempt.passed %}
+                        <span class="inline-block bg-green-900 text-green-200 text-xs px-2 py-1 rounded">
+                            ✓ PASSED
+                        </span>
+                        {% else %}
+                        <span class="inline-block bg-red-900 text-red-200 text-xs px-2 py-1 rounded">
+                            ✗ FAILED
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="text-right">
+                        {% if attempt.score is not None %}
+                        <div class="text-3xl font-bold {% if attempt.passed %}text-green-400{% else %}text-red-400{% endif %}">
+                            {{ attempt.score }}/{{ attempt.exam.total_points }}
+                        </div>
+                        <div class="text-sm text-gray-400">Score</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'dashboard:view_exam_result' attempt.id %}" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm inline-block">
+                        View Results
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-center py-8">You haven't taken any exams yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Remove active state from all tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('border-blue-500', 'text-blue-400');
+            button.classList.add('border-transparent', 'text-gray-400');
+        });
+        
+        // Show selected tab content
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+        
+        // Add active state to selected tab
+        const activeTab = document.getElementById('tab-' + tabName);
+        activeTab.classList.remove('border-transparent', 'text-gray-400');
+        activeTab.classList.add('border-blue-500', 'text-blue-400');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}'s Profile - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Profile Header -->
+    <div class="bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+        <div class="flex items-start space-x-6">
+            <div class="flex-shrink-0">
+                {% if profile_user.profile.profile_picture %}
+                    <img src="{{ profile_user.profile.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500">
+                {% else %}
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-blue-500">
+                        <span class="text-4xl font-bold text-white">{{ profile_user.username.0|upper }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="flex-1">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-3xl font-bold text-white">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+                    {% if user == profile_user %}
+                        <a href="{% url 'users:edit_profile' %}" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+                            <i class="fas fa-edit mr-2"></i>Edit Profile
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <p class="text-gray-400 mt-1">@{{ profile_user.username }}</p>
+                
+                {% if profile_user.profile.location %}
+                    <p class="text-gray-300 mt-2">
+                        <i class="fas fa-map-marker-alt mr-2"></i>{{ profile_user.profile.location }}
+                    </p>
+                {% endif %}
+                
+                {% if profile_user.profile.phone %}
+                    <p class="text-gray-300 mt-1">
+                        <i class="fas fa-phone mr-2"></i>{{ profile_user.profile.phone }}
+                    </p>
+                {% endif %}
+                
+                <p class="text-gray-300 mt-1">
+                    <i class="fas fa-envelope mr-2"></i>{{ profile_user.email }}
+                </p>
+                
+                {% if profile_user.profile.bio %}
+                    <p class="text-gray-300 mt-4">{{ profile_user.profile.bio }}</p>
+                {% endif %}
+                
+                <p class="text-gray-400 mt-4 text-sm">
+                    <i class="fas fa-calendar-alt mr-2"></i>Joined {{ profile_user.date_joined|date:"F Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Section -->
+    <div class="mb-6 flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-white">My Skills</h2>
+        {% if user == profile_user %}
+            <a href="{% url 'users:add_skill' %}" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200">
+                <i class="fas fa-plus mr-2"></i>Add Skill
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Teaching Skills -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-chalkboard-teacher text-green-500 mr-2"></i>Can Teach
+            </h2>
+            
+            {% if teaching_skills %}
+                <div class="space-y-4">
+                    {% for skill in teaching_skills %}
+                        <div class="bg-gray-700 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-white">{{ skill.name }}</h3>
+                                        <span class="px-3 py-1 bg-green-600 text-white text-sm rounded-full">{{ skill.get_level_display }}</span>
+                                    </div>
+                                </div>
+                                {% if user == profile_user %}
+                                    <form method="post" action="{% url 'users:delete_skill' skill.pk %}" class="ml-3" onsubmit="return confirm('Are you sure you want to delete this skill?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-600 transition duration-200">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            {% if skill.description %}
+                                <p class="text-gray-300">{{ skill.description }}</p>
+                            {% endif %}
+                            <p class="text-gray-400 text-sm mt-2">
+                                <i class="fas fa-tag mr-1"></i>{{ skill.get_skill_type_display }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-400">No teaching skills listed yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Learning Interests -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-book-reader text-blue-500 mr-2"></i>Wants to Learn
+            </h2>
+            
+            {% if learning_interests %}
+                <div class="space-y-4">
+                    {% for interest in learning_interests %}
+                        <div class="bg-gray-700 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-white">{{ interest.name }}</h3>
+                                        <span class="px-3 py-1 bg-blue-600 text-white text-sm rounded-full">{{ interest.get_level_display }}</span>
+                                    </div>
+                                </div>
+                                {% if user == profile_user %}
+                                    <form method="post" action="{% url 'users:delete_skill' interest.pk %}" class="ml-3" onsubmit="return confirm('Are you sure you want to delete this skill?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-600 transition duration-200">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            {% if interest.description %}
+                                <p class="text-gray-300">{{ interest.description }}</p>
+                            {% endif %}
+                            <p class="text-gray-400 text-sm mt-2">
+                                <i class="fas fa-tag mr-1"></i>{{ interest.get_skill_type_display }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-400">No learning interests listed yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

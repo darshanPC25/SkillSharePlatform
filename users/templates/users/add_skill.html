@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Skill - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-dark-card rounded-lg shadow-xl p-8 border border-dark-border">
+        <h2 class="text-3xl font-bold mb-8 text-blue-400">Add New Skill</h2>
+        
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    <p class="mt-1 text-sm text-red-400">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
+                    Add Skill
+                </button>
+                <a href="{% url 'users:profile' %}" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    input, textarea, select {
+        background-color: #0f172a;
+        border: 1px solid #334155;
+        color: #f1f5f9;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        width: 100%;
+    }
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+    input[type="checkbox"] {
+        width: auto;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}

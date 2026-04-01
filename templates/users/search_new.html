@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Users - SkillSwap{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-white mb-8">Search Users</h1>
+    
+    <!-- Search Form -->
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+        <form method="get" action="{% url 'search_users' %}" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="q" class="block text-sm font-medium text-gray-300 mb-2">Search by Name or Bio</label>
+                    <input type="text" 
+                           name="q" 
+                           id="q" 
+                           value="{{ query }}"
+                           placeholder="Enter name or keywords..."
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="skill" class="block text-sm font-medium text-gray-300 mb-2">Filter by Skill</label>
+                    <input type="text" 
+                           name="skill" 
+                           id="skill" 
+                           value="{{ skill_filter }}"
+                           placeholder="Enter skill name..."
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <a href="{% url 'search_users' %}" class="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-200">
+                    Clear
+                </a>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+                    <i class="fas fa-search mr-2"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Results -->
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-white mb-6">
+            {% if query or skill_filter %}
+                Search Results ({{ users.count }} found)
+            {% else %}
+                All Users ({{ users.count }})
+            {% endif %}
+        </h2>
+
+        {% if users %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for user in users %}
+                    <div class="bg-gray-700 rounded-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" 
+                                         alt="{{ user.username }}"
+                                         class="w-16 h-16 rounded-full object-cover border-2 border-blue-500">
+                                {% else %}
+                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-2 border-blue-500">
+                                        <span class="text-white text-2xl font-bold">
+                                            {{ user.username|first|upper }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-semibold text-white">
+                                        {{ user.get_full_name|default:user.username }}
+                                    </h3>
+                                    <p class="text-gray-400 text-sm">@{{ user.username }}</p>
+                                </div>
+                            </div>
+
+                            {% if user.bio %}
+                                <p class="text-gray-300 text-sm mb-4 line-clamp-2">{{ user.bio }}</p>
+                            {% endif %}
+
+                            {% if user.location %}
+                                <div class="flex items-center text-gray-400 text-sm mb-4">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span>{{ user.location }}</span>
+                                </div>
+                            {% endif %}
+
+                            <!-- Teaching Skills -->
+                            <div class="mb-4">
+                                <h4 class="text-sm font-semibold text-gray-400 mb-2">Can Teach:</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for skill in user.teaching_skills.all|slice:":3" %}
+                                        <span class="px-2 py-1 bg-green-600 text-white text-xs rounded-full">
+                                            {{ skill.skill_name }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="text-gray-500 text-xs">No skills listed</span>
+                                    {% endfor %}
+                                    {% if user.teaching_skills.count > 3 %}
+                                        <span class="px-2 py-1 bg-gray-600 text-white text-xs rounded-full">
+                                            +{{ user.teaching_skills.count|add:"-3" }} more
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Learning Interests -->
+                            <div class="mb-4">
+                                <h4 class="text-sm font-semibold text-gray-400 mb-2">Wants to Learn:</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for interest in user.learning_interests.all|slice:":3" %}
+                                        <span class="px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
+                                            {{ interest.interest_name }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="text-gray-500 text-xs">No interests listed</span>
+                                    {% endfor %}
+                                    {% if user.learning_interests.count > 3 %}
+                                        <span class="px-2 py-1 bg-gray-600 text-white text-xs rounded-full">
+                                            +{{ user.learning_interests.count|add:"-3" }} more
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-2">
+                                <a href="{% url 'profile' user.username %}" 
+                                   class="flex-1 px-4 py-2 bg-blue-600 text-white text-center text-sm rounded-lg hover:bg-blue-700 transition duration-200">
+                                    View Profile
+                                </a>
+                                <a href="{% url 'create_exchange' user.username %}" 
+                                   class="flex-1 px-4 py-2 bg-green-600 text-white text-center text-sm rounded-lg hover:bg-green-700 transition duration-200">
+                                    Connect
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-search text-gray-600 text-6xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-400 mb-2">No Users Found</h3>
+                <p class="text-gray-500">
+                    {% if query or skill_filter %}
+                        Try adjusting your search criteria
+                    {% else %}
+                        No users registered yet
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

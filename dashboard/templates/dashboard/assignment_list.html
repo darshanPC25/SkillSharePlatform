@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignments - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-blue-400">📝 Assignments</h1>
+        <a href="{% url 'dashboard:create_assignment' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+            + Create Assignment
+        </a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-dark-border">
+        <nav class="-mb-px flex space-x-8">
+            <button onclick="showTab('available')" id="tab-available" class="tab-button border-b-2 border-blue-500 text-blue-400 py-4 px-1 text-sm font-medium">
+                📋 Available Assignments
+            </button>
+            <button onclick="showTab('created')" id="tab-created" class="tab-button border-b-2 border-transparent text-gray-400 hover:text-white py-4 px-1 text-sm font-medium">
+                📝 My Assignments
+            </button>
+            <button onclick="showTab('submitted')" id="tab-submitted" class="tab-button border-b-2 border-transparent text-gray-400 hover:text-white py-4 px-1 text-sm font-medium">
+                ✅ My Submissions
+            </button>
+        </nav>
+    </div>
+
+    <!-- Available Assignments Tab -->
+    <div id="content-available" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for assignment in available_assignments %}
+            <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border hover:border-blue-500 transition">
+                <h3 class="text-xl font-bold text-white mb-2">{{ assignment.title }}</h3>
+                <p class="text-sm text-gray-400 mb-2">by {{ assignment.creator.username }}</p>
+                <p class="text-sm text-gray-300 mb-4 line-clamp-3">{{ assignment.description }}</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">
+                        {{ assignment.get_difficulty_display }}
+                    </span>
+                    <span class="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                        {{ assignment.questions.count }} Questions
+                    </span>
+                    <span class="bg-yellow-900 text-yellow-200 text-xs px-2 py-1 rounded">
+                        {{ assignment.total_points }} pts
+                    </span>
+                </div>
+                
+                <div class="text-xs text-gray-400 mb-4">
+                    Due: {{ assignment.due_date|date:"M d, Y g:i A" }}
+                </div>
+                
+                {% if assignment.id in submitted_ids %}
+                <div class="bg-green-900 text-green-200 text-center py-2 rounded-md text-sm">
+                    ✓ Submitted
+                </div>
+                {% else %}
+                <a href="{% url 'dashboard:take_assignment' assignment.id %}" 
+                   class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm">
+                    Start Assignment
+                </a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-gray-400 col-span-3 text-center py-8">No assignments available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- My Created Assignments Tab -->
+    <div id="content-created" class="tab-content hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for assignment in my_assignments %}
+            <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+                <h3 class="text-xl font-bold text-white mb-2">{{ assignment.title }}</h3>
+                <p class="text-sm text-gray-300 mb-4 line-clamp-3">{{ assignment.description }}</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">
+                        {{ assignment.get_difficulty_display }}
+                    </span>
+                    <span class="bg-gray-700 text-gray-200 text-xs px-2 py-1 rounded">
+                        {{ assignment.questions.count }} Questions
+                    </span>
+                    <span class="{% if assignment.is_active %}bg-green-900 text-green-200{% else %}bg-red-900 text-red-200{% endif %} text-xs px-2 py-1 rounded">
+                        {% if assignment.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                
+                <div class="text-xs text-gray-400 mb-4">
+                    Due: {{ assignment.due_date|date:"M d, Y g:i A" }}
+                </div>
+                
+                <div class="flex gap-2">
+                    <a href="{% url 'dashboard:edit_assignment' assignment.id %}" 
+                       class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-md text-sm">
+                        Edit
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 col-span-3 text-center py-8">You haven't created any assignments yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- My Submissions Tab -->
+    <div id="content-submitted" class="tab-content hidden">
+        <div class="space-y-4">
+            {% for submission in my_submissions %}
+            <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">{{ submission.assignment.title }}</h3>
+                        <p class="text-sm text-gray-400 mb-2">Submitted: {{ submission.submitted_at|date:"M d, Y g:i A" }}</p>
+                        <span class="inline-block text-xs px-2 py-1 rounded
+                            {% if submission.status == 'graded' %}bg-green-900 text-green-200
+                            {% elif submission.status == 'late' %}bg-red-900 text-red-200
+                            {% else %}bg-yellow-900 text-yellow-200{% endif %}">
+                            {{ submission.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="text-right">
+                        {% if submission.score is not None %}
+                        <div class="text-3xl font-bold text-blue-400">{{ submission.score }}/{{ submission.assignment.total_points }}</div>
+                        <div class="text-sm text-gray-400">Score</div>
+                        {% else %}
+                        <div class="text-sm text-yellow-400">Pending Grade</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'dashboard:view_submission' submission.id %}" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm inline-block">
+                        View Submission
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-center py-8">You haven't submitted any assignments yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Remove active state from all tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('border-blue-500', 'text-blue-400');
+            button.classList.add('border-transparent', 'text-gray-400');
+        });
+        
+        // Show selected tab content
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+        
+        // Add active state to selected tab
+        const activeTab = document.getElementById('tab-' + tabName);
+        activeTab.classList.remove('border-transparent', 'text-gray-400');
+        activeTab.classList.add('border-blue-500', 'text-blue-400');
+    }
+</script>
+{% endblock %}

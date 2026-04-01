@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Submission - {{ submission.assignment.title }} - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <h1 class="text-3xl font-bold text-blue-400 mb-4">📄 Assignment Submission</h1>
+        <h2 class="text-xl text-white mb-4">{{ submission.assignment.title }}</h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-dark-bg p-4 rounded-lg">
+                <div class="text-gray-400 text-sm">Score</div>
+                <div class="text-2xl font-bold text-white">{{ submission.score }}/{{ submission.total_points }}</div>
+            </div>
+            <div class="bg-dark-bg p-4 rounded-lg">
+                <div class="text-gray-400 text-sm">Percentage</div>
+                <div class="text-2xl font-bold text-{% if percentage >= 70 %}green{% elif percentage >= 50 %}yellow{% else %}red{% endif %}-400">
+                    {{ percentage|floatformat:0 }}%
+                </div>
+            </div>
+            <div class="bg-dark-bg p-4 rounded-lg">
+                <div class="text-gray-400 text-sm">Submitted</div>
+                <div class="text-white">{{ submission.submitted_at|date:"M d, Y" }}</div>
+            </div>
+            <div class="bg-dark-bg p-4 rounded-lg">
+                <div class="text-gray-400 text-sm">Status</div>
+                <div class="text-white">{{ submission.status|title }}</div>
+            </div>
+        </div>
+        
+        {% if submission.feedback %}
+        <div class="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+            <h3 class="text-blue-400 font-semibold mb-2">Instructor Feedback</h3>
+            <p class="text-gray-300">{{ submission.feedback }}</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <h2 class="text-2xl font-bold text-white mb-6">Your Answers</h2>
+        
+        {% for answer in answers %}
+        <div class="bg-dark-bg p-4 rounded-lg mb-4 border border-dark-border">
+            <div class="flex justify-between items-start mb-3">
+                <h3 class="text-lg font-semibold text-white">Question {{ answer.question.order }}</h3>
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">{{ answer.question.points }} pts</span>
+                    {% if answer.is_correct %}
+                        <span class="bg-green-900 text-green-200 text-xs px-2 py-1 rounded">✓ Correct</span>
+                    {% elif answer.question.question_type != 'text' %}
+                        <span class="bg-red-900 text-red-200 text-xs px-2 py-1 rounded">✗ Incorrect</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <p class="text-gray-300 mb-3">{{ answer.question.question_text }}</p>
+            
+            <div class="bg-dark-card p-3 rounded-md mb-2">
+                <div class="text-gray-400 text-sm mb-1">Your Answer:</div>
+                <div class="text-white">{{ answer.answer_text }}</div>
+            </div>
+            
+            {% if answer.question.question_type != 'text' and answer.question.correct_answer %}
+            <div class="bg-green-900/20 p-3 rounded-md mb-2">
+                <div class="text-green-400 text-sm mb-1">Correct Answer:</div>
+                <div class="text-green-200">{{ answer.question.correct_answer }}</div>
+            </div>
+            {% endif %}
+            
+            {% if answer.feedback %}
+            <div class="bg-blue-900/20 p-3 rounded-md">
+                <div class="text-blue-400 text-sm mb-1">Feedback:</div>
+                <div class="text-gray-300">{{ answer.feedback }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="flex gap-4">
+        <a href="{% url 'dashboard:assignment_list' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-md font-medium">
+            Back to Assignments
+        </a>
+    </div>
+</div>
+{% endblock %}

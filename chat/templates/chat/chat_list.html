@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Chats - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-blue-400 mb-8">My Chats</h1>
+    
+    <div class="bg-dark-card rounded-lg shadow-xl border border-dark-border">
+        <div class="divide-y divide-dark-border">
+            {% for room in rooms %}
+            <a href="{% url 'chat:chat_room' room.name %}" 
+               class="block p-6 hover:bg-dark-bg transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">
+                            {% for user in room.participants.all %}
+                                {% if user != request.user %}{{ user.username }}{% endif %}
+                            {% endfor %}
+                        </h3>
+                        <p class="text-sm text-gray-400">{{ room.updated_at|date:"M d, Y g:i A" }}</p>
+                    </div>
+                    <span class="text-blue-400">→</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="p-8 text-center text-gray-400">
+                No chats yet. Start connecting with other users!
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

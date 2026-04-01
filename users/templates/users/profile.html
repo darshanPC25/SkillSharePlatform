@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Profile Info -->
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <h2 class="text-2xl font-bold mb-6 text-blue-400">Update Profile</h2>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="text-center mb-4">
+                {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="w-32 h-32 rounded-full mx-auto border-4 border-blue-500">
+                {% endif %}
+            </div>
+            
+            {% for field in u_form %}
+            <div>
+                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endfor %}
+            
+            {% for field in p_form %}
+            <div>
+                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
+                Update Profile
+            </button>
+        </form>
+    </div>
+    
+    <!-- My Skills -->
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-400">My Skills</h2>
+            <a href="{% url 'users:add_skill' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                Add Skill
+            </a>
+        </div>
+        
+        <div class="space-y-4">
+            {% for skill in user.skills.all %}
+            <div class="bg-dark-bg border border-dark-border rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">{{ skill.name }}</h3>
+                        <p class="text-sm text-gray-400">{{ skill.get_skill_type_display }} - {{ skill.get_level_display }}</p>
+                        <p class="text-sm text-gray-300 mt-2">{{ skill.description }}</p>
+                        <div class="mt-2 space-x-2">
+                            {% if skill.can_teach %}
+                            <span class="inline-block bg-green-900 text-green-200 text-xs px-2 py-1 rounded">Can Teach</span>
+                            {% endif %}
+                            {% if skill.want_to_learn %}
+                            <span class="inline-block bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">Want to Learn</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <form method="post" action="{% url 'users:delete_skill' skill.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-400 hover:text-red-300">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-center py-8">No skills added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    input, textarea, select {
+        background-color: #0f172a;
+        border: 1px solid #334155;
+        color: #f1f5f9;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        width: 100%;
+    }
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        ring: 2px;
+        ring-color: #3b82f6;
+    }
+</style>
+{% endblock %}

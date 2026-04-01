@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid md:grid-cols-3 gap-6">
+    <!-- Profile Card -->
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+        <div class="text-center">
+            {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="w-24 h-24 rounded-full mx-auto mb-4">
+            {% else %}
+            <div class="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold mx-auto mb-4">
+                {{ user.username.0|upper }}
+            </div>
+            {% endif %}
+            <h2 class="text-xl font-bold text-gray-100">{{ user.get_full_name|default:user.username }}</h2>
+            <p class="text-gray-400">@{{ user.username }}</p>
+            <div class="mt-4 space-y-2">
+                <a href="{% url 'profile' user.username %}" class="block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Profile</a>
+                <a href="{% url 'edit_profile' %}" class="block bg-gray-700 text-gray-100 px-4 py-2 rounded hover:bg-gray-600">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="md:col-span-2 space-y-6">
+        <!-- Skills I Can Teach -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-100">Skills I Can Teach</h3>
+                <a href="{% url 'add_skill' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">+ Add Skill</a>
+            </div>
+            {% if teaching_skills %}
+            <div class="space-y-2">
+                {% for skill in teaching_skills %}
+                <div class="border border-gray-700 rounded-lg p-3 bg-gray-750">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-100">{{ skill.skill_name }}</h4>
+                            <p class="text-sm text-gray-400">Level: {{ skill.get_skill_level_display }}</p>
+                            <p class="text-sm text-gray-400 mt-1">{{ skill.description|truncatewords:20 }}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded {% if skill.is_tech %}bg-blue-900 text-blue-300{% else %}bg-purple-900 text-purple-300{% endif %}">
+                            {% if skill.is_tech %}Tech{% else %}Non-Tech{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">No skills added yet. Add your first skill!</p>
+            {% endif %}
+        </div>
+
+        <!-- Skills I Want to Learn -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-100">Skills I Want to Learn</h3>
+                <a href="{% url 'add_interest' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">+ Add Interest</a>
+            </div>
+            {% if learning_interests %}
+            <div class="space-y-2">
+                {% for interest in learning_interests %}
+                <div class="border border-gray-700 rounded-lg p-3 bg-gray-750">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-100">{{ interest.skill_name }}</h4>
+                            {% if interest.description %}
+                            <p class="text-sm text-gray-400 mt-1">{{ interest.description|truncatewords:20 }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded {% if interest.is_tech %}bg-blue-900 text-blue-300{% else %}bg-purple-900 text-purple-300{% endif %}">
+                            {% if interest.is_tech %}Tech{% else %}Non-Tech{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">No interests added yet. Add what you want to learn!</p>
+            {% endif %}
+        </div>
+
+        <!-- Potential Matches -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+            <h3 class="text-xl font-bold text-gray-100 mb-4">Potential Matches</h3>
+            {% if matches %}
+            <div class="space-y-3">
+                {% for match in matches|slice:":5" %}
+                <div class="border border-gray-700 rounded-lg p-3 hover:bg-gray-750">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold text-gray-100">{{ match.get_full_name|default:match.username }}</h4>
+                            <p class="text-sm text-gray-400">@{{ match.username }}</p>
+                        </div>
+                        <a href="{% url 'profile' match.username %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">View</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4">
+                <a href="{% url 'search_users' %}" class="text-blue-400 hover:underline">See all matches →</a>
+            </div>
+            {% else %}
+            <p class="text-gray-400">No matches found yet. Add more skills and interests to find matches!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

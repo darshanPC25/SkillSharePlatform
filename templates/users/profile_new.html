@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Profile Header -->
+    <div class="bg-gray-800 rounded-lg shadow-lg p-8 mb-6 border border-gray-700">
+        <div class="flex items-start space-x-6">
+            {% if profile_user.profile_picture %}
+            <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-32 h-32 rounded-full">
+            {% else %}
+            <div class="w-32 h-32 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center justify-center text-4xl font-bold">
+                {{ profile_user.username.0|upper }}
+            </div>
+            {% endif %}
+            
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-gray-100">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+                <p class="text-gray-400 text-lg">@{{ profile_user.username }}</p>
+                
+                {% if profile_user.bio %}
+                <p class="mt-4 text-gray-300">{{ profile_user.bio }}</p>
+                {% endif %}
+                
+                <div class="mt-4 space-y-2">
+                    {% if profile_user.location %}
+                    <p class="text-gray-400">📍 {{ profile_user.location }}</p>
+                    {% endif %}
+                    {% if profile_user.email %}
+                    <p class="text-gray-400">✉️ {{ profile_user.email }}</p>
+                    {% endif %}
+                    {% if profile_user.phone %}
+                    <p class="text-gray-400">📱 {{ profile_user.phone }}</p>
+                    {% endif %}
+                </div>
+                
+                {% if user == profile_user %}
+                <div class="mt-4">
+                    <a href="{% url 'edit_profile' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 inline-block">Edit Profile</a>
+                </div>
+                {% else %}
+                <div class="mt-4 space-x-3">
+                    <a href="{% url 'create_exchange' profile_user.username %}" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 inline-block">Start Exchange</a>
+                    {% if chat_room %}
+                    <a href="{% url 'chat_room' chat_room.id %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 inline-block">Chat</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Skills Section -->
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Can Teach -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+            <h2 class="text-2xl font-bold text-gray-100 mb-4">Can Teach</h2>
+            {% if teaching_skills %}
+            <div class="space-y-3">
+                {% for skill in teaching_skills %}
+                <div class="border border-gray-700 rounded-lg p-4 bg-gray-750">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-lg text-gray-100">{{ skill.skill_name }}</h3>
+                            <p class="text-sm text-gray-400">Level: {{ skill.get_skill_level_display }}</p>
+                            {% if skill.description %}
+                            <p class="text-sm text-gray-300 mt-2">{{ skill.description }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="px-3 py-1 text-xs rounded-full {% if skill.is_tech %}bg-blue-900 text-blue-300{% else %}bg-purple-900 text-purple-300{% endif %}">
+                            {% if skill.is_tech %}Tech{% else %}Non-Tech{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">No teaching skills listed yet.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Wants to Learn -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+            <h2 class="text-2xl font-bold text-gray-100 mb-4">Wants to Learn</h2>
+            {% if learning_interests %}
+            <div class="space-y-3">
+                {% for interest in learning_interests %}
+                <div class="border border-gray-700 rounded-lg p-4 bg-gray-750">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-lg text-gray-100">{{ interest.skill_name }}</h3>
+                            {% if interest.description %}
+                            <p class="text-sm text-gray-300 mt-2">{{ interest.description }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="px-3 py-1 text-xs rounded-full {% if interest.is_tech %}bg-blue-900 text-blue-300{% else %}bg-purple-900 text-purple-300{% endif %}">
+                            {% if interest.is_tech %}Tech{% else %}Non-Tech{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400">No learning interests listed yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

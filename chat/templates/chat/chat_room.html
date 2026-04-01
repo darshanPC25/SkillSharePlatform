@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat with {{ other_user.username }} - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-dark-card rounded-lg shadow-xl border border-dark-border flex flex-col" style="height: 70vh;">
+        <!-- Chat Header -->
+        <div class="p-4 border-b border-dark-border flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-bold text-white">{{ other_user.username }}</h2>
+                <p class="text-sm text-gray-400">Online</p>
+            </div>
+            <a href="{% url 'video:start_call' other_user.id %}" 
+               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                Video Call
+            </a>
+        </div>
+        
+        <!-- Messages -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+            {% for message in chat_messages %}
+            <div class="flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+                <div class="max-w-xs lg:max-w-md">
+                    <div class="{% if message.sender == request.user %}bg-blue-600{% else %}bg-dark-bg border border-dark-border{% endif %} rounded-lg p-3">
+                        <p class="text-sm text-white">{{ message.content }}</p>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ message.timestamp|date:"g:i A" }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Message Input -->
+        <div class="p-4 border-t border-dark-border">
+            <div class="flex space-x-2">
+                <input type="text" id="message-input" placeholder="Type your message..." 
+                       class="flex-1 bg-dark-bg border border-dark-border rounded-md px-4 py-2 text-gray-100 focus:outline-none focus:border-blue-500">
+                <button id="send-button" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const roomName = "{{ room.name }}";
+    const username = "{{ request.user.username }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messagesDiv = document.getElementById('chat-messages');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex ' + (data.username === username ? 'justify-end' : 'justify-start');
+        
+        messageDiv.innerHTML = `
+            <div class="max-w-xs lg:max-w-md">
+                <div class="${data.username === username ? 'bg-blue-600' : 'bg-dark-bg border border-dark-border'} rounded-lg p-3">
+                    <p class="text-sm text-white">${data.message}</p>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Just now</p>
+            </div>
+        `;
+        
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value.trim();
+        
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'username': username
+            }));
+            messageInput.value = '';
+        }
+    }
+
+    document.getElementById('send-button').onclick = sendMessage;
+    document.getElementById('message-input').onkeypress = function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    };
+
+    // Scroll to bottom on load
+    document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ assignment.title }} - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+        <h1 class="text-3xl font-bold text-blue-400 mb-4">📝 {{ assignment.title }}</h1>
+        <p class="text-gray-300 mb-4">{{ assignment.description }}</p>
+        
+        <div class="flex gap-4 text-sm text-gray-400">
+            <span>Difficulty: <span class="text-white">{{ assignment.get_difficulty_display }}</span></span>
+            <span>Due: <span class="text-white">{{ assignment.due_date|date:"M d, Y g:i A" }}</span></span>
+            <span>Total Points: <span class="text-white">{{ total_points }}</span></span>
+        </div>
+    </div>
+    
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        {% for question in questions %}
+        <div class="bg-dark-card rounded-lg shadow-xl p-6 border border-dark-border">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg font-semibold text-white">Question {{ question.order }}</h3>
+                <span class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">{{ question.points }} pts</span>
+            </div>
+            
+            <p class="text-gray-300 mb-4">{{ question.question_text }}</p>
+            
+            {% if question.question_type == 'text' %}
+                <textarea name="answer_{{ question.id }}" rows="4" required
+                          class="w-full bg-dark-bg border border-dark-border rounded-md px-4 py-2 text-gray-100 focus:outline-none focus:border-blue-500"
+                          placeholder="Enter your answer here..."></textarea>
+            
+            {% elif question.question_type == 'multiple_choice' %}
+                <div class="space-y-2">
+                    <label class="flex items-center p-3 bg-dark-bg rounded-md border border-dark-border hover:border-blue-500 cursor-pointer">
+                        <input type="radio" name="answer_{{ question.id }}" value="A" required class="mr-3">
+                        <span class="text-gray-100">A: {{ question.option_a }}</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-dark-bg rounded-md border border-dark-border hover:border-blue-500 cursor-pointer">
+                        <input type="radio" name="answer_{{ question.id }}" value="B" required class="mr-3">
+                        <span class="text-gray-100">B: {{ question.option_b }}</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-dark-bg rounded-md border border-dark-border hover:border-blue-500 cursor-pointer">
+                        <input type="radio" name="answer_{{ question.id }}" value="C" required class="mr-3">
+                        <span class="text-gray-100">C: {{ question.option_c }}</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-dark-bg rounded-md border border-dark-border hover:border-blue-500 cursor-pointer">
+                        <input type="radio" name="answer_{{ question.id }}" value="D" required class="mr-3">
+                        <span class="text-gray-100">D: {{ question.option_d }}</span>
+                    </label>
+                </div>
+            
+            {% elif question.question_type == 'true_false' %}
+                <div class="space-y-2">
+                    <label class="flex items-center p-3 bg-dark-bg rounded-md border border-dark-border hover:border-blue-500 cursor-pointer">
+                        <input type="radio" name="answer_{{ question.id }}" value="True" required class="mr-3">
+                        <span class="text-gray-100">True</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-dark-bg rounded-md border border-dark-border hover:border-blue-500 cursor-pointer">
+                        <input type="radio" name="answer_{{ question.id }}" value="False" required class="mr-3">
+                        <span class="text-gray-100">False</span>
+                    </label>
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <div class="flex gap-4">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium">
+                Submit Assignment
+            </button>
+            <a href="{% url 'dashboard:assignment_list' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-md font-medium">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

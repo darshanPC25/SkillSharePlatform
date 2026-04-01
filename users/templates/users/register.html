@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Skill Swap{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="bg-dark-card rounded-lg shadow-xl p-8 border border-dark-border">
+        <h2 class="text-3xl font-bold text-center mb-8 text-blue-400">Join SkillSwap</h2>
+        
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-300">
+                    {{ field.label }}
+                </label>
+                <input type="{{ field.field.widget.input_type }}" 
+                       name="{{ field.name }}" 
+                       id="{{ field.id_for_label }}"
+                       {% if field.field.required %}required{% endif %}
+                       class="mt-1 block w-full bg-dark-bg border border-dark-border rounded-md px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {% if field.errors %}
+                    <p class="mt-1 text-sm text-red-400">{{ field.errors.0 }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                    <p class="mt-1 text-xs text-gray-400">{{ field.help_text }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                Register
+            </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <p class="text-gray-400">Already have an account? 
+                <a href="{% url 'users:login' %}" class="text-blue-400 hover:text-blue-300">Login here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
