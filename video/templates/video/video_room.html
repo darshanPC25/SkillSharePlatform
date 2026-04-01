@@ -29,6 +29,35 @@
                 <p class="absolute text-gray-400">Your Video</p>
             </div>
         </div>
+
+        <div class="mt-4 p-4 bg-slate-900 border border-slate-700 rounded-lg">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">Connection Debug</h3>
+                <span class="text-xs text-slate-400">Live</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                <div class="bg-slate-800 rounded px-2 py-2">
+                    <div class="text-slate-400">Socket</div>
+                    <div id="state-socket" class="text-slate-100 font-medium">connecting</div>
+                </div>
+                <div class="bg-slate-800 rounded px-2 py-2">
+                    <div class="text-slate-400">Signaling</div>
+                    <div id="state-signaling" class="text-slate-100 font-medium">new</div>
+                </div>
+                <div class="bg-slate-800 rounded px-2 py-2">
+                    <div class="text-slate-400">ICE Conn</div>
+                    <div id="state-ice-connection" class="text-slate-100 font-medium">new</div>
+                </div>
+                <div class="bg-slate-800 rounded px-2 py-2">
+                    <div class="text-slate-400">ICE Gather</div>
+                    <div id="state-ice-gathering" class="text-slate-100 font-medium">new</div>
+                </div>
+                <div class="bg-slate-800 rounded px-2 py-2">
+                    <div class="text-slate-400">Peer Conn</div>
+                    <div id="state-peer-connection" class="text-slate-100 font-medium">new</div>
+                </div>
+            </div>
+        </div>
         
         <div class="mt-6 flex justify-center flex-wrap gap-3">
             <button id="toggle-audio" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
@@ -154,6 +183,7 @@
 
     videoSocket.onopen = function() {
         console.log('Video WebSocket connected');
+        updateSocketStateLabel();
     };
 
     videoSocket.onmessage = async function(e) {
@@ -251,10 +281,12 @@
 
     videoSocket.onclose = function(e) {
         console.error('Video WebSocket closed unexpectedly');
+        updateSocketStateLabel();
     };
 
     videoSocket.onerror = function(e) {
         console.error('Video WebSocket error:', e);
+        updateSocketStateLabel();
     };
 
     let localStream;
@@ -268,6 +300,33 @@
     let isEndingCall = false;
     let remoteParticipantPresent = false;
     let pendingIceCandidates = [];
+    let isMakingOffer = false;
+
+    function setStateLabel(id, value) {
+        const element = document.getElementById(id);
+        if (!element) return;
+        element.textContent = value || 'n/a';
+    }
+
+    function updateSocketStateLabel() {
+        const socketStates = ['connecting', 'open', 'closing', 'closed'];
+        setStateLabel('state-socket', socketStates[videoSocket.readyState] || 'unknown');
+    }
+
+    function updatePeerStateLabels() {
+        if (!peerConnection) {
+            setStateLabel('state-signaling', 'new');
+            setStateLabel('state-ice-connection', 'new');
+            setStateLabel('state-ice-gathering', 'new');
+            setStateLabel('state-peer-connection', 'new');
+            return;
+        }
+
+        setStateLabel('state-signaling', peerConnection.signalingState);
+        setStateLabel('state-ice-connection', peerConnection.iceConnectionState);
+        setStateLabel('state-ice-gathering', peerConnection.iceGatheringState);
+        setStateLabel('state-peer-connection', peerConnection.connectionState);
+    }
 
     function sendSignal(type, payload) {
         if (videoSocket.readyState !== WebSocket.OPEN) return;
@@ -315,7 +374,7 @@
     }
 
     async function tryStartOffer() {
-        if (!isCaller || hasSentOffer || !remoteParticipantPresent || !localStream) return;
+        if (hasSentOffer || !remoteParticipantPresent || !localStream || isMakingOffer) return;
         if (videoSocket.readyState !== WebSocket.OPEN) return;
         await createAndSendOffer();
     }
@@ -335,18 +394,54 @@
             }
         };
 
+        peerConnection.onsignalingstatechange = () => {
+            updatePeerStateLabels();
+        };
+
+        peerConnection.oniceconnectionstatechange = () => {
+            updatePeerStateLabels();
+        };
+
+        peerConnection.onicegatheringstatechange = () => {
+            updatePeerStateLabels();
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+            updatePeerStateLabels();
+        };
+
         peerConnection.ontrack = event => {
             event.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
         };
+
+        peerConnection.onnegotiationneeded = async () => {
+            if (!remoteParticipantPresent || isMakingOffer || peerConnection.signalingState !== 'stable') {
+                return;
+            }
+
+            try {
+                await createAndSendOffer();
+            } catch (error) {
+                console.error('Negotiation failed:', error);
+            }
+        };
+
+        updatePeerStateLabels();
     }
 
     async function createAndSendOffer() {
         await ensurePeerConnection();
         await syncPeerConnectionTracks();
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        sendSignal('offer', peerConnection.localDescription);
-        hasSentOffer = true;
+        isMakingOffer = true;
+
+        try {
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            sendSignal('offer', peerConnection.localDescription);
+            hasSentOffer = true;
+        } finally {
+            isMakingOffer = false;
+        }
     }
 
     // Get user media
@@ -717,10 +812,14 @@
         pendingIceCandidates = [];
         hasSentOffer = false;
         remoteParticipantPresent = false;
+        isMakingOffer = false;
 
         if (closeSocket && videoSocket && videoSocket.readyState !== WebSocket.CLOSED) {
             videoSocket.close();
         }
+
+        updatePeerStateLabels();
+        updateSocketStateLabel();
     }
 
     function waitForSignalDelivery() {
@@ -754,6 +853,9 @@
     document.getElementById('end-call').onclick = endCall;
 
     // Start on load
+    updateSocketStateLabel();
+    updatePeerStateLabels();
+
     startLocalStream().then(() => {
         if (videoSocket.readyState === WebSocket.OPEN && isCaller) {
             // Offer is triggered once another participant joins.
