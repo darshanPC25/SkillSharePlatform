@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SkillSwap: True Serverless Django Backend (Lambda + API Gateway WebSockets)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        DJANGO_SETTINGS_MODULE: skill_swap.settings
+        WS_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+        WS_API_ENDPOINT: !Sub "https://${SkillSwapWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+
+Resources:
+  # --- Lambda Function ---
+  SkillSwapFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: skill_swap.lambda_handler.lambda_handler
+      Events:
+        # Standard REST API
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref SkillSwapHttpApi
+        # WebSocket API routes
+        WSConnectEvent:
+          Type: Api
+          Properties:
+            Path: /$connect
+            Method: post
+            RestApiId: !Ref SkillSwapWebSocketApi
+        WSDisconnectEvent:
+          Type: Api
+          Properties:
+            Path: /$disconnect
+            Method: post
+            RestApiId: !Ref SkillSwapWebSocketApi
+        WSDefaultEvent:
+          Type: Api
+          Properties:
+            Path: /$default
+            Method: post
+            RestApiId: !Ref SkillSwapWebSocketApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WebSocketConnectionsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'execute-api:ManageConnections'
+              Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SkillSwapWebSocketApi}/*'
+
+  # --- API Gateways ---
+  SkillSwapHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: Prod
+
+  SkillSwapWebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: SkillSwapWebSocketApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  # WebSocket Routes & Integrations
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref SkillSwapWebSocketApi
+      RouteKey: $connect
+      AuthorizationType: NONE
+      Target: !Join [ '/', [ 'integrations', !Ref WebSocketLambdaIntegration ] ]
+  
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref SkillSwapWebSocketApi
+      RouteKey: $disconnect
+      Target: !Join [ '/', [ 'integrations', !Ref WebSocketLambdaIntegration ] ]
+
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref SkillSwapWebSocketApi
+      RouteKey: $default
+      Target: !Join [ '/', [ 'integrations', !Ref WebSocketLambdaIntegration ] ]
+
+  WebSocketLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref SkillSwapWebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SkillSwapFunction.Arn}/invocations"
+
+  WebSocketDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+      - DefaultRoute
+    Properties:
+      ApiId: !Ref SkillSwapWebSocketApi
+
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref SkillSwapWebSocketApi
+      StageName: Prod
+      DeploymentId: !Ref WebSocketDeployment
+
+  # --- DynamoDB Table ---
+  WebSocketConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SkillSwapConnections
+      AttributeDefinitions:
+        - AttributeName: connectionId
+          AttributeType: S
+        - AttributeName: roomId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: connectionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: roomId-index
+          KeySchema:
+            - AttributeName: roomId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  HttpApiUrl:
+    Description: "Base URL of your REST API"
+    Value: !Sub "https://${SkillSwapHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  WebSocketApiUrl:
+    Description: "Base URL of your WebSocket API"
+    Value: !Sub "wss://${SkillSwapWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"

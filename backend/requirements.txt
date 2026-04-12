@@ -1,4 +1,4 @@
-﻿asgiref==3.10.0
+asgiref==3.10.0
 attrs==25.4.0
 autobahn==25.10.2
 Automat==25.4.16
@@ -27,3 +27,7 @@ typing_extensions==4.15.0
 tzdata==2025.2
 whitenoise==6.9.0
 zope.interface==8.1.1
+mangum==0.19.0
+boto3==1.36.21
+django-storages[s3]==1.14.4
+
