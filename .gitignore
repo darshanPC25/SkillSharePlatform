@@ -125,3 +125,5 @@ media/
 *.bak
 *.tmp
 *.orig
+
+problem.txt
