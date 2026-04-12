@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { API_BASE_URL } from './api';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
@@ -46,7 +47,7 @@ function ClearDBRoute() {
   const [status, setStatus] = React.useState('Clearing database...');
 
   React.useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/cleardb/${password}/`)
+    fetch(`${API_BASE_URL}cleardb/${password}/`)
       .then(res => res.json())
       .then(data => setStatus(data.message || data.error || 'Done.'))
       .catch(err => setStatus('Error clearing DB: ' + err.message));

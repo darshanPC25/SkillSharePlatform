@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Trophy, Medal, Star, Target, Crown } from 'lucide-react';
-import api from '../api';
+import api, { API_BASE_URL } from '../api';
 import { GlassCard } from '../components/ui/GlassCard';
 
 export function Leaderboard() {
@@ -48,7 +48,7 @@ export function Leaderboard() {
                 <div className="text-2xl font-bold text-white/50 w-8 text-center font-mono">#{user.rank}</div>
                 <div className="w-12 h-12 rounded-full border-2 border-white/10 overflow-hidden bg-black/40">
                   {user.profile_picture ? (
-                    <img src={`http://127.0.0.1:8000${user.profile_picture}`} className="w-full h-full object-cover" alt={user.username} />
+                    <img src={user.profile_picture.startsWith('http') ? user.profile_picture : `${API_BASE_URL.replace('/api/', '')}${user.profile_picture}`} className="w-full h-full object-cover" alt={user.username} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center font-bold text-gray-400">{user.username.charAt(0).toUpperCase()}</div>
                   )}

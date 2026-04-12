@@ -40,23 +40,20 @@ Resources:
             ApiId: !Ref SkillSwapHttpApi
         # WebSocket API routes
         WSConnectEvent:
-          Type: Api
+          Type: ApiGatewayV2
           Properties:
-            Path: /$connect
-            Method: post
-            RestApiId: !Ref SkillSwapWebSocketApi
+            ApiId: !Ref SkillSwapWebSocketApi
+            RouteKey: $connect
         WSDisconnectEvent:
-          Type: Api
+          Type: ApiGatewayV2
           Properties:
-            Path: /$disconnect
-            Method: post
-            RestApiId: !Ref SkillSwapWebSocketApi
+            ApiId: !Ref SkillSwapWebSocketApi
+            RouteKey: $disconnect
         WSDefaultEvent:
-          Type: Api
+          Type: ApiGatewayV2
           Properties:
-            Path: /$default
-            Method: post
-            RestApiId: !Ref SkillSwapWebSocketApi
+            ApiId: !Ref SkillSwapWebSocketApi
+            RouteKey: $default
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref WebSocketConnectionsTable

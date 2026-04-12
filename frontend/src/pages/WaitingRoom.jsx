@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, XCircle, Wifi } from 'lucide-react';
-import api from '../api';
+import api, { WS_BASE_URL } from '../api';
 
 export function WaitingRoom() {
   const { roomId } = useParams();
@@ -34,8 +34,11 @@ export function WaitingRoom() {
 
           // Step 2: Open personal WS channel and wait for host decision
           const token = localStorage.getItem('access_token');
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const ws = new WebSocket(`${protocol}//127.0.0.1:8000/ws/waiting/${roomId}/?token=${token}`);
+          const isProd = !window.location.hostname.includes('localhost');
+          const wsUrl = isProd
+            ? `${WS_BASE_URL}/?room_id=waiting_${roomId}&token=${token}`
+            : `ws://127.0.0.1:8000/ws/waiting/${roomId}/?token=${token}`;
+          const ws = new WebSocket(wsUrl);
           wsRef.current = ws;
 
           ws.onopen = () => {
@@ -77,8 +80,11 @@ export function WaitingRoom() {
 
   // Temporarily connect to the MAIN room WebSocket just to knock
   function connectToRoomAndKnock(roomId, user, token) {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const knockWs = new WebSocket(`${protocol}//127.0.0.1:8000/ws/video/${roomId}/?token=${token}`);
+    const isProd = !window.location.hostname.includes('localhost');
+    const knockUrl = isProd
+      ? `${WS_BASE_URL}/?room_id=${roomId}&token=${token}`
+      : `ws://127.0.0.1:8000/ws/video/${roomId}/?token=${token}`;
+    const knockWs = new WebSocket(knockUrl);
     knockWs.onopen = () => {
       knockWs.send(JSON.stringify({
         type: 'admit_request',

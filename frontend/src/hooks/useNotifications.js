@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { WS_BASE_URL } from '../api';
 
 /**
  * useNotifications — Real-time notification hook.
@@ -64,8 +65,7 @@ export function useNotifications() {
     const token = localStorage.getItem('access_token');
     if (!token || !room?.name) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//127.0.0.1:8000/ws/chat/${room.name}/?token=${token}`;
+    const wsUrl = `${WS_BASE_URL}/?room_id=${room.name}&token=${token}&user_id=${room.other_user?.id || 'unknown'}`;
     const socket = new WebSocket(wsUrl);
 
     socket.onmessage = (e) => {
@@ -128,8 +128,7 @@ export function useNotifications() {
     intentionalClose.current = false;
 
     function createSocket() {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//127.0.0.1:8000/ws/notifications/?token=${token}`;
+      const wsUrl = `${WS_BASE_URL}/?room_id=notifications&token=${token}`;
       const socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {

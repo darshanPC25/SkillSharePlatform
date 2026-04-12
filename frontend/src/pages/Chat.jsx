@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Search, Send, User, MessageSquare, Plus, Paperclip, File as FileIcon, Loader2 } from 'lucide-react';
-import api from '../api';
+import api, { API_BASE_URL } from '../api';
 import { useChatWebSocket } from '../hooks/useChatWebSocket';
 import { useNotificationContext } from '../context/NotificationContext';
 
@@ -60,7 +60,8 @@ export function Chat() {
   const getMediaUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
-    return `http://127.0.0.1:8000${path.startsWith('/') ? path : '/' + path}`;
+    const base = API_BASE_URL.replace('/api/', '');
+    return `${base}${path.startsWith('/') ? path : '/' + path}`;
   };
 
   // Fetch initial profile & chat list

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../api';
+import api, { API_BASE_URL } from '../api';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { User, MapPin, Award, BookOpen, Star, AlertCircle, ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
 
@@ -75,7 +75,7 @@ export function PublicProfile() {
         <div className="md:col-span-1 space-y-6">
           <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 text-center">
             {profile.profile_picture ? (
-               <img src={`http://127.0.0.1:8000${profile.profile_picture}`} className="w-32 h-32 rounded-full mx-auto border-4 border-[#ea580c]/30 object-cover mb-4" alt={data.username} />
+               <img src={profile.profile_picture.startsWith('http') ? profile.profile_picture : `${API_BASE_URL.replace('/api/', '')}${profile.profile_picture}`} className="w-32 h-32 rounded-full mx-auto border-4 border-[#ea580c]/30 object-cover mb-4" alt={data.username} />
             ) : (
                <div className="w-32 h-32 rounded-full mx-auto border-4 border-[#ea580c]/30 bg-white/5 flex items-center justify-center mb-4"><User className="w-12 h-12 text-gray-400"/></div>
             )}

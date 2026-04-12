@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Send, MessageSquare, Minimize2, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../api';
+import api, { API_BASE_URL } from '../../api';
 
 /**
  * ChatPopup — A floating mini-messenger popup that appears when a new
@@ -52,7 +52,8 @@ export function ChatPopup({ popupRoom, popupMessages, dismissPopup, sendPopupMsg
   const getMediaUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
-    return `http://127.0.0.1:8000${path.startsWith('/') ? path : '/' + path}`;
+    const base = API_BASE_URL.replace('/api/', '');
+    return `${base}${path.startsWith('/') ? path : '/' + path}`;
   };
 
   const otherUser = popupRoom?.other_user;
