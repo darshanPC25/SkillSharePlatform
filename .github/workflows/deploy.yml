@@ -29,4 +29,4 @@ jobs:
       - name: Build and Deploy
         run: |
           sam build
-          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name skillswap-cluster --capabilities CAPABILITY_IAM --region ${{ secrets.AWS_REGION }}
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name skillswap-cluster --capabilities CAPABILITY_IAM --region ${{ secrets.AWS_REGION }} --resolve-s3
