@@ -3,11 +3,11 @@ import axios from 'axios';
 const isProduction = !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
 
 export const API_BASE_URL = isProduction 
-    ? 'https://YOUR_AWS_API_ID.execute-api.us-east-1.amazonaws.com/Prod/api/' 
+    ? 'https://s16ga5gsci.execute-api.us-east-1.amazonaws.com/api/' 
     : 'http://127.0.0.1:8000/api/';
 
 export const WS_BASE_URL = isProduction
-    ? 'wss://YOUR_AWS_WS_ID.execute-api.us-east-1.amazonaws.com/Prod'
+    ? 'wss://ye9jt6fi9k.execute-api.us-east-1.amazonaws.com/Prod'
     : 'ws://127.0.0.1:8000/ws';
 
 const api = axios.create({

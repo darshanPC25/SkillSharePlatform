@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { WS_BASE_URL } from '../api';
 
 const ICE_SERVERS = {
   iceServers: [
@@ -42,8 +43,14 @@ export function useWebRTC(roomId) {
       const token = localStorage.getItem('access_token');
       if (!token) throw new Error('No auth token found');
 
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//127.0.0.1:8000/ws/video/${roomId}/?token=${token}`;
+      const isProd = !window.location.hostname.includes('localhost');
+      
+      // In production (AWS), we use query parameters for room identification.
+      // In local (Daphne), we use the traditional path-based URL.
+      const wsUrl = isProd 
+        ? `${WS_BASE_URL}/?room_id=${roomId}&token=${token}`
+        : `ws://127.0.0.1:8000/ws/video/${roomId}/?token=${token}`;
+        
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => setIsConnected(true);

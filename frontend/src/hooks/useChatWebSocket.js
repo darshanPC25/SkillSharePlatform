@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { WS_BASE_URL } from '../api';
 
 export function useChatWebSocket(roomName, { onNewMessage } = {}) {
   const [messages, setMessages] = useState([]);
@@ -14,8 +15,13 @@ export function useChatWebSocket(roomName, { onNewMessage } = {}) {
     }
 
     const token = localStorage.getItem('access_token');
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//127.0.0.1:8000/ws/chat/${roomName}/?token=${token}`;
+    const isProd = !window.location.hostname.includes('localhost');
+    
+    // In production (AWS), we use query parameters for room identification.
+    // In local (Daphne), we use the traditional path-based URL.
+    const wsUrl = isProd 
+      ? `${WS_BASE_URL}/?room_id=${roomName}&token=${token}`
+      : `ws://127.0.0.1:8000/ws/chat/${roomName}/?token=${token}`;
 
     ws.current = new WebSocket(wsUrl);
 
