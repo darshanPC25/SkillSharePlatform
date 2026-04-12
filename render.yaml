@@ -2,10 +2,9 @@ services:
   - type: web
     name: skill-swap
     env: python
-    rootDir: backend
     plan: free
-    buildCommand: cd backend && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
-    startCommand: cd backend && daphne -b 0.0.0.0 -p $PORT skill_swap.asgi:application
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: daphne -b 0.0.0.0 -p $PORT skill_swap.asgi:application
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
