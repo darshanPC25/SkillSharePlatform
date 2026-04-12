@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skill_swap.settings')
 
 # Initialize the ASGI application for Mangum
 django_asgi_app = get_asgi_application()
-handler = Mangum(django_asgi_app, lifespan="off")
+handler = Mangum(django_asgi_app, lifespan="off", api_gateway_base_path="/Prod")
 
 # Import the WebSocket bridge logic
 from .aws_websocket_bridge import register_connection, unregister_connection, broadcast_to_room

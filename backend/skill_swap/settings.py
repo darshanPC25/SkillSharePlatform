@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = True  # Force True for local development
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.onrender.com,localhost,127.0.0.1,.amazonaws.com').split(',')
+ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
