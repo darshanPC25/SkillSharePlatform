@@ -3,6 +3,16 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   SkillSwap: True Serverless Django Backend (Lambda + API Gateway WebSockets)
 
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: "Neon.tech PostgreSQL Connection String"
+    NoEcho: True
+  AllowedHosts:
+    Type: String
+    Default: "*"
+    Description: "Allowed Hosts for Django"
+
 Globals:
   Function:
     Timeout: 30
@@ -13,6 +23,7 @@ Globals:
         DJANGO_SETTINGS_MODULE: skill_swap.settings
         WS_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
         WS_API_ENDPOINT: !Sub "https://${SkillSwapWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+        DATABASE_URL: !Ref DatabaseUrl
 
 Resources:
   # --- Lambda Function ---
