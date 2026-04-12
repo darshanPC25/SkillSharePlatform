@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In | SkillSwap{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center relative">
+    
+    <!-- Floating Auth Card -->
+    <div class="tech-card p-8 max-w-md w-full animate-slide-up z-10 rounded-2xl shadow-2xl border border-white/5 bg-black/40 backdrop-blur-xl">
+        <!-- Header -->
+        <div class="mb-8 text-center">
+            <h2 class="font-display text-3xl font-semibold text-white tracking-tight">
+                Welcome Back
+            </h2>
+            <p class="font-sans text-gray-400 mt-2 text-sm">Please enter your details to sign in.</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="mb-6 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 font-sans text-sm">
+            <span class="block mb-1 font-semibold">Login failed:</span>
+            {% for field, errors in form.errors.items %}{% for error in errors %}<span class="block ml-2">&bull; {{ error }}</span>{% endfor %}{% endfor %}
+        </div>
+        {% endif %}
+
+        <form class="space-y-5" method="POST">
+            {% csrf_token %}
+
+            <div>
+                <label for="id_username" class="font-sans font-medium text-gray-300 text-sm block mb-2">Username</label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-gray-500"><i class="fas fa-user"></i></span>
+                    <input id="id_username" name="username" type="text" required autocomplete="username"
+                        class="tech-input w-full pl-11 pr-4 py-3"
+                        placeholder="Enter your username">
+                </div>
+            </div>
+
+            <div>
+                <label for="id_password" class="font-sans font-medium text-gray-300 text-sm block mb-2">Password</label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 text-gray-500"><i class="fas fa-lock"></i></span>
+                    <input id="id_password" name="password" type="password" required autocomplete="current-password"
+                        class="tech-input w-full pl-11 pr-4 py-3"
+                        placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" id="login-btn"
+                    class="btn-neural w-full py-3.5 font-sans font-medium text-[15px] flex items-center justify-center gap-2 rounded-xl">
+                    <span id="login-text">Sign In</span>
+                    <i id="login-icon" class="fas fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-white/10 text-center">
+            <p class="font-sans text-sm text-gray-400">
+                Don't have an account? 
+                <a href="{% url 'users:register' %}" class="text-orange-500 hover:text-orange-400 font-medium ml-1 transition-colors">
+                    Sign up
+                </a>
+            </p>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function() {
+        const btn = document.getElementById('login-btn');
+        const icon = document.getElementById('login-icon');
+        const text = document.getElementById('login-text');
+        btn.classList.add('opacity-75');
+        icon.className = 'fas fa-spinner fa-spin text-sm';
+        text.textContent = 'Signing In...';
+    });
+</script>
+{% endblock %}

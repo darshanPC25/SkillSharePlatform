@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}SkillSwap - Premium Knowledge Exchange{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* The glowing image approximation for the background */
+    .hero-glow-bg {
+        position: fixed;
+        top: -10%; right: -20%; bottom: -10%; left: 30%;
+        background: radial-gradient(circle at center, rgba(234, 88, 12, 0.15) 0%, rgba(194, 65, 12, 0.05) 40%, transparent 70%);
+        z-index: -2;
+        pointer-events: none;
+        transition: transform 0.1s ease-out;
+        will-change: transform;
+    }
+    
+    /* Scroll-linked floating elements */
+    .parallax-sphere {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(40px);
+        opacity: 0.2;
+        z-index: -1;
+        pointer-events: none;
+        transition: transform 0.1s ease-out;
+        will-change: transform;
+    }
+    .sphere-1 { width: 400px; height: 400px; top: 10%; left: 5%; background: radial-gradient(circle, #ea580c, transparent); }
+    .sphere-2 { width: 300px; height: 300px; top: 50%; right: 5%; background: radial-gradient(circle, #c2410c, transparent); }
+    .sphere-3 { width: 500px; height: 500px; top: 80%; left: 10%; background: radial-gradient(circle, #9a3412, transparent); }
+
+    .hero-text-glow {
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .section-spacing {
+        padding-top: 8rem;
+        padding-bottom: 8rem;
+    }
+    
+    /* Reveal animation trigger */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+    }
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Background Parallax Elements -->
+<div class="hero-glow-bg" id="main-glow"></div>
+<div class="parallax-sphere sphere-1" data-speed="0.15"></div>
+<div class="parallax-sphere sphere-2" data-speed="-0.2"></div>
+<div class="parallax-sphere sphere-3" data-speed="0.1"></div>
+
+<div class="relative w-full overflow-hidden">
+    
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="min-h-[calc(100vh-80px)] flex flex-col justify-center pt-8 pb-16">
+        <div class="grid lg:grid-cols-12 gap-8 lg:gap-16 flex-1 items-center">
+            
+            <!-- Left Column: Headline -->
+            <div class="lg:col-span-12 xl:col-span-7 flex flex-col justify-center animate-fade-in" style="animation-duration: 1.2s;">
+                <h1 class="font-display font-medium text-5xl sm:text-6xl lg:text-[4.5rem] leading-[1.1] text-white tracking-tight mb-6 hero-text-glow">
+                    Connect, Learn,<br>
+                    <span class="text-orange-500 font-semibold">Grow Together.</span>
+                </h1>
+                
+                <p class="font-sans text-gray-300 text-lg max-w-xl leading-relaxed bg-black/20 p-5 rounded-2xl backdrop-blur-md border border-white/5 shadow-xl">
+                    Exchange knowledge through high-quality video sessions. Master new skills from experts while sharing what you do best.
+                </p>
+
+                <div class="mt-10 flex items-center space-x-6 text-gray-400">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-video text-orange-500"></i> Seamless Video
+                    </div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-users text-orange-500"></i> Smart Matching
+                    </div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-comments text-orange-500"></i> Live Chat
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Welcome / Auth Card -->
+            <div class="lg:col-span-12 xl:col-span-5 flex flex-col justify-center mt-12 xl:mt-0 animate-fade-in" style="animation-duration: 1.5s;">
+                <div class="tech-card p-8 bg-black/40 border border-white/10 shadow-2xl relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div class="flex items-start gap-6 relative z-10">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <i class="fas fa-graduation-cap text-3xl text-white"></i>
+                        </div>
+                        
+                        <div class="flex-1">
+                            <h4 class="font-sans text-white text-xl font-semibold mb-2">
+                                {% if user.is_authenticated %}Welcome back!{% else %}Join the Community{% endif %}
+                            </h4>
+                            <p class="font-sans text-sm text-gray-400 leading-relaxed mb-6">
+                                {% if user.is_authenticated %}
+                                Head to your dashboard to review your active skills and discover new connections.
+                                {% else %}
+                                Start matching with highly skilled professionals locally and globally.
+                                {% endif %}
+                            </p>
+                            
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard:home' %}" class="btn-neural inline-block px-6 py-3 font-medium text-sm w-full text-center">
+                                Go to Dashboard
+                            </a>
+                            {% else %}
+                            <a href="{% url 'users:login' %}" class="btn-neural inline-block px-6 py-3 font-medium text-sm w-full text-center">
+                                Log in to your Account
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <div class="nav-capsule hover:-translate-y-1 transform transition-transform">Programming</div>
+                    <div class="nav-capsule hover:-translate-y-1 transform transition-transform border-orange-500/50 text-orange-400">Design</div>
+                    <div class="nav-capsule hover:-translate-y-1 transform transition-transform">Marketing</div>
+                    <div class="nav-capsule hover:-translate-y-1 transform transition-transform">Languages</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FEATURES SECTION ==================== -->
+    <section class="section-spacing relative border-t border-white/5 z-10">
+        <div class="text-center mb-16 reveal">
+            <h2 class="font-display text-3xl md:text-5xl font-semibold text-white tracking-tight mb-4">
+                Platform <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-600">Features</span>
+            </h2>
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg">Everything you need to run smooth and productive learning sessions.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="tech-card p-8 reveal hover:-translate-y-2 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center mb-6">
+                    <i class="fas fa-video text-2xl text-orange-500"></i>
+                </div>
+                <h3 class="font-sans font-semibold text-xl text-white mb-3 tracking-tight">High-Quality Video</h3>
+                <p class="font-sans text-sm text-gray-400 leading-relaxed">
+                    Integrated WebRTC protocol enables seamless, ultra-high definition visual data transfer between peers for maximum clarity.
+                </p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="tech-card p-8 reveal hover:-translate-y-2 transition-transform duration-300" style="transition-delay: 100ms;">
+                <div class="w-14 h-14 rounded-xl bg-red-500/20 flex items-center justify-center mb-6">
+                    <i class="fas fa-brain text-2xl text-red-500"></i>
+                </div>
+                <h3 class="font-sans font-semibold text-xl text-white mb-3 tracking-tight">Smart Matchmaking</h3>
+                <p class="font-sans text-sm text-gray-400 leading-relaxed">
+                    Our dynamic algorithm parses your skills and interests, mapping you to optimal network peers with high compatibility.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="tech-card p-8 reveal hover:-translate-y-2 transition-transform duration-300" style="transition-delay: 200ms;">
+                <div class="w-14 h-14 rounded-xl bg-purple-500/20 flex items-center justify-center mb-6">
+                    <i class="fas fa-code text-2xl text-purple-500"></i>
+                </div>
+                <h3 class="font-sans font-semibold text-xl text-white mb-3 tracking-tight">Interactive Tools</h3>
+                <p class="font-sans text-sm text-gray-400 leading-relaxed">
+                    Collaborate instantly using built-in rich chat environments alongside your video streams.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== JOIN CTA SECTION ==================== -->
+    <section class="section-spacing relative border-t border-white/5 z-10 text-center bg-gradient-to-b from-transparent to-black/50">
+        <div class="reveal max-w-3xl mx-auto">
+            <h2 class="font-display text-4xl md:text-5xl font-semibold text-white tracking-tight mb-6">
+                Ready to get started?
+            </h2>
+            <p class="font-sans text-gray-400 mb-10 text-lg">
+                Join thousands of users exchanging knowledge globally today.
+            </p>
+            
+            {% if not user.is_authenticated %}
+            <a href="{% url 'users:register' %}" class="inline-block">
+                <button class="btn-neural px-10 py-4 font-medium text-lg rounded-xl">
+                    Create an Account
+                </button>
+            </a>
+            {% else %}
+            <a href="{% url 'dashboard:home' %}" class="inline-block">
+                <button class="btn-neural px-10 py-4 font-medium text-lg rounded-xl">
+                    Return to Dashboard
+                </button>
+            </a>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<script>
+    // --------------------------------------------------------
+    // SCROLL ANIMATIONS & PARALLAX
+    // --------------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+        // Parallax effect on mouse move & scroll
+        const mainGlow = document.getElementById('main-glow');
+        const parallaxSpheres = document.querySelectorAll('.parallax-sphere');
+        
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            
+            // Move background glow slightly down with scroll
+            mainGlow.style.transform = `translateY(${scrollY * 0.1}px)`;
+            
+            // Move spheres at different speeds
+            parallaxSpheres.forEach(sphere => {
+                const speed = parseFloat(sphere.getAttribute('data-speed'));
+                sphere.style.transform = `translateY(${scrollY * speed}px)`;
+            });
+        });
+
+        // Reveal elements on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const revealElements = () => {
+            const windowHeight = window.innerHeight;
+            const elementVisible = 100;
+            
+            reveals.forEach(reveal => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                }
+            });
+        };
+        window.addEventListener('scroll', revealElements);
+        revealElements(); // trigger on load
+    });
+</script>
+{% endblock %}

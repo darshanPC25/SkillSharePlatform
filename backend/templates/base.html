@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SKILL_SWAP // INTERFACE{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@100..800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        neural: {
+                            glow: '#ea580c', // Bright orange/amber glow
+                            core: '#c2410c', // Deep amber
+                            sys: '#7f1d1d',  // Deep red
+                            bg: '#050300',   // Near black
+                            card: 'rgba(15, 10, 5, 0.45)', // Glass backdrop
+                            border: 'rgba(234, 88, 12, 0.3)', // Subtle orange border
+                        }
+                    },
+                    boxShadow: {
+                        'neural-glow': '0 0 40px rgba(234, 88, 12, 0.25)',
+                        'neural-intense': '0 0 60px rgba(234, 88, 12, 0.5)',
+                    },
+                    animation: {
+                        'scanline': 'scanline 8s linear infinite',
+                        'data-stream': 'dataStream 20s linear infinite',
+                        'pulse-glow': 'pulseGlow 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100vh)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 0.8, filter: 'blur(100px)' },
+                            '50%': { opacity: 1, filter: 'blur(120px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ---- Core Tech Setup ---- */
+        body {
+            background-color: #050300;
+            color: #d1d5db; /* gray-300 */
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        
+        /* The main cinematic glow from the reference */
+        .ambient-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(234,88,12,0.2) 0%, rgba(194,65,12,0.1) 40%, rgba(5,3,0,0) 70%);
+            border-radius: 50%;
+            z-index: -2;
+            pointer-events: none;
+            animation: pulseGlow 8s ease-in-out infinite;
+        }
+
+        /* ---- Typography Utilities ---- */
+        h1, h2, h3, h4, h5, h6, .font-display, .font-tech, .tech-label { font-family: 'Inter', sans-serif; letter-spacing: normal; text-transform: none; }
+        
+        .text-glow { font-weight: 700; color: #fff; }
+
+        /* ---- Glassmorphic Tech Cards ---- */
+        .tech-card {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .tech-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ---- Technical Specs Table ---- */
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .spec-row:last-child { border-bottom: none; }
+        .spec-label {
+            font-family: 'Inter', sans-serif;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .spec-value {
+            font-family: 'Inter', sans-serif;
+            color: #f3f4f6;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* ---- Capsule Navigation (Bottom pill style) ---- */
+        .nav-capsule {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 99px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #d1d5db;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .nav-capsule:hover, .nav-capsule.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: #ffffff;
+        }
+
+        /* ---- Top Nav Bar Interface ---- */
+        .interface-nav {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .system-time { font-family: 'Inter', sans-serif; font-size: 0.75rem; color: #9ca3af; display: flex; align-items: center; gap: 8px; font-weight: 500;}
+
+        /* Buttons */
+        .btn-neural {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: 500;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        .btn-neural:hover {
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Inputs */
+        .tech-input {
+            background: rgba(20, 20, 20, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff !important;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: all 0.2s;
+        }
+        .tech-input:focus {
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            background: rgba(30, 30, 30, 0.9) !important;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05) !important;
+            outline: none;
+        }
+
+        /* Dropdown custom */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%; right: 0;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            min-width: 200px;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu { display: block; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <!-- Top Interface Navigation -->
+    <nav class="interface-nav sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+            
+            <!-- Branding -->
+            <a href="{% url 'users:landing' %}" class="flex items-center space-x-3 group text-white">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neural-glow to-red-600 flex items-center justify-center shadow-neural-glow group-hover:scale-105 transition-transform duration-300">
+                    <i class="fas fa-layer-group text-white text-xl"></i>
+                </div>
+                <span class="font-display font-bold tracking-widest text-lg" style="letter-spacing: 0.1em;">Skill<span class="text-neural-glow font-light">Swap</span></span>
+            </a>
+
+            {% if user.is_authenticated %}
+            <!-- System Stats / Middle Nav -->
+            <div class="hidden lg:flex items-center space-x-8">
+                <a href="{% url 'dashboard:home' %}" class="font-sans text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                    Dashboard
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-neural-glow transition-all group-hover:w-full"></span>
+                </a>
+                <a href="{% url 'dashboard:browse_skills' %}" class="font-sans text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                    Browse Skills
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-neural-glow transition-all group-hover:w-full"></span>
+                </a>
+                <a href="{% url 'dashboard:my_matches' %}" class="font-sans text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                    My Matches
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-neural-glow transition-all group-hover:w-full"></span>
+                </a>
+                
+                <div class="dropdown relative py-4">
+                    <span class="font-sans text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center group">
+                        Learning <i class="fas fa-angle-down ml-1.5 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                    </span>
+                    <div class="dropdown-menu mt-0 p-2 rounded-xl border border-neural-border/50 shadow-2xl">
+                        <a href="{% url 'dashboard:assignment_list' %}" class="block px-4 py-2.5 font-sans font-medium text-sm text-gray-300 rounded-lg hover:text-white hover:bg-neural-glow/20 transition-colors">Assignments</a>
+                        <a href="{% url 'dashboard:exam_list' %}" class="block px-4 py-2.5 font-sans font-medium text-sm text-gray-300 rounded-lg hover:text-white hover:bg-neural-glow/20 transition-colors">Exams</a>
+                    </div>
+                </div>
+
+                <a href="{% url 'chat:chat_list' %}" class="font-sans text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                    Chat
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-neural-glow transition-all group-hover:w-full"></span>
+                </a>
+                <a href="{% url 'video:call_list' %}" class="font-sans text-sm font-medium text-gray-300 hover:text-white transition-colors relative group">
+                    Video Rooms
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-neural-glow transition-all group-hover:w-full"></span>
+                </a>
+            </div>
+
+            <!-- User Auth Box -->
+            <div class="flex items-center">
+                <div class="dropdown relative py-2">
+                    <button class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div class="text-right hidden sm:block">
+                            <div class="text-sm font-medium text-white">{{ user.username }}</div>
+                            <div class="text-xs text-neural-glow font-medium flex items-center justify-end gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-neural-glow animate-pulse"></span> Online
+                            </div>
+                        </div>
+                        
+                        <!-- Profile Photo Fix -->
+                        <div class="relative w-10 h-10 rounded-full border-2 border-neural-border/50 flex-shrink-0 overflow-hidden bg-black/50">
+                            {% if user.profile.profile_picture and user.profile.profile_picture.name != 'default.jpg' %}
+                            <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center font-display text-lg font-bold text-neural-glow">
+                                {{ user.username.0|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </button>
+                    <div class="dropdown-menu mt-0 p-2 right-0 rounded-xl border border-neural-border/50 shadow-2xl min-w-[200px] z-50">
+                        <a href="{% url 'users:profile' %}" class="block px-4 py-2.5 font-sans text-sm text-gray-300 rounded-lg hover:text-white hover:bg-neural-glow/20 transition-colors">
+                            <i class="fas fa-user mr-2 text-neural-glow"></i> My Profile
+                        </a>
+                        <a href="{% url 'users:edit_profile' %}" class="block px-4 py-2.5 font-sans text-sm text-gray-300 rounded-lg hover:text-white hover:bg-neural-glow/20 transition-colors">
+                            <i class="fas fa-cog mr-2 text-neural-glow"></i> Settings
+                        </a>
+                        <a href="{% url 'users:add_skill' %}" class="block px-4 py-2.5 font-sans text-sm text-gray-300 rounded-lg hover:text-white hover:bg-neural-glow/20 transition-colors">
+                            <i class="fas fa-plus mr-2 text-neural-glow"></i> Add Skill
+                        </a>
+                        <div class="h-px bg-neural-border/30 my-1 mx-2"></div>
+                        <a href="{% url 'users:logout' %}" class="block px-4 py-2.5 font-sans text-sm text-red-400 rounded-lg hover:text-red-300 hover:bg-red-900/20 transition-colors">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Guest Nav -->
+            <div class="flex items-center space-x-6">
+                <a href="{% url 'users:login' %}" class="font-sans font-medium text-sm text-gray-300 hover:text-white transition-colors">Log In</a>
+                <a href="{% url 'users:register' %}" class="btn-neural px-5 py-2 font-sans font-medium text-sm rounded-lg" style="letter-spacing: normal;">Sign Up</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- System Messages -->
+    {% if messages %}
+    <div class="fixed top-20 right-6 z-50 flex flex-col gap-2">
+        {% for message in messages %}
+        <div class="tech-card px-4 py-3 border-l-4 flex items-center gap-3 animate-fade-in
+            {% if message.tags == 'error' %}border-red-500 text-red-300
+            {% elif message.tags == 'success' %}border-green-500 text-green-300
+            {% else %}border-neural-glow text-orange-200{% endif %}">
+            <i class="font-tech text-sm !font-normal">SYS.MSG ></i>
+            <span class="text-sm font-sans">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Container -->
+    <main class="max-w-[1400px] mx-auto px-6 py-8 relative z-10 w-full min-h-[calc(100vh-64px)]">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+
+    {% if user.is_authenticated %}
+    <!-- ===== Incoming Neural Call Modal ===== -->
+    <div id="incoming-call-modal" style="display:none;" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+        <div class="relative z-10 tech-card p-1">
+            <div class="border border-neural-border/50 p-8 text-center bg-black/40">
+                <div class="font-tech text-neural-glow text-sm mb-4 tracking-widest animate-pulse">INCOMING NEURAL STREAM</div>
+                
+                <h3 class="text-3xl font-display text-white mb-2 uppercase tracking-wide">
+                    <span id="call-caller-name" class="text-glow"></span>
+                </h3>
+                
+                <div class="flex items-center justify-center gap-4 font-tech text-xs text-gray-400 mb-8 mt-4">
+                    <span>BANDWIDTH: HIGH</span>
+                    <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                    <span>T-MINUS: <span id="call-countdown" class="text-neural-glow">30</span>s</span>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button id="btn-accept-call" class="flex-1 btn-neural py-3 px-6 font-tech text-sm tracking-wider hover:bg-green-900/50 hover:border-green-500 hover:text-green-400 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                        ACCEPT_STREAM
+                    </button>
+                    <button id="btn-decline-call" class="flex-1 py-3 px-6 font-tech text-sm tracking-wider border border-red-900/50 text-red-500 hover:bg-red-900/20">
+                        DECLINE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Call Declined Toast ===== -->
+    <div id="call-declined-toast" style="display:none;" class="fixed bottom-6 right-6 z-[999] tech-card border-red-500/50 px-4 py-3 flex items-center gap-3">
+        <i class="font-tech text-red-500">ERR_RJT ></i>
+        <span id="call-declined-msg" class="text-red-200 text-sm font-sans">Connection refused.</span>
+    </div>
+
+    <script>
+    (function() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const notifSocket = new WebSocket(wsProtocol + window.location.host + '/ws/notifications/');
+        let callRoomUrl = null, callRoomId = null, callCallerId = null, countdownTimer = null, countdownVal = 30;
+        
+        const modal = document.getElementById('incoming-call-modal');
+        const callerNameEl = document.getElementById('call-caller-name');
+        const countdownEl = document.getElementById('call-countdown');
+        
+        window.dismissModal = function(autoDecline) {
+            modal.style.display = 'none'; clearInterval(countdownTimer);
+            if (autoDecline && callRoomId) {
+                fetch('/video/decline/' + callRoomId + '/', {
+                    method: 'POST', headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' }
+                }).catch(() => {});
+            }
+        };
+
+        function getCsrf() { return document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] || ''; }
+
+        notifSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'incoming_call') {
+                callRoomUrl = data.room_url; callRoomId = data.room_id; callCallerId = data.caller_id;
+                callerNameEl.textContent = data.caller;
+                modal.style.display = 'flex';
+                countdownVal = 30; countdownEl.textContent = countdownVal;
+                countdownTimer = setInterval(() => {
+                    countdownVal--; countdownEl.textContent = countdownVal;
+                    if (countdownVal <= 0) window.dismissModal(true);
+                }, 1000);
+            } else if (data.type === 'call_declined') {
+                const toast = document.getElementById('call-declined-toast');
+                document.getElementById('call-declined-msg').textContent = data.receiver + ' refused connection.';
+                toast.style.display = 'flex';
+                setTimeout(() => { toast.style.display = 'none'; }, 5000);
+            }
+        };
+
+        notifSocket.onerror = function(e) { console.warn('Neural Socket err:', e); };
+
+        document.getElementById('btn-accept-call').onclick = function() { window.dismissModal(false); if (callRoomUrl) window.location.href = callRoomUrl; };
+        document.getElementById('btn-decline-call').onclick = function() { window.dismissModal(true); };
+    })();
+    </script>
+    {% endif %}
+</body>
+</html>

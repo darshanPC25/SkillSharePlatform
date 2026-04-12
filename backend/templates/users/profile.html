@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile | {{ profile_user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        position: relative;
+        overflow: hidden;
+    }
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto animate-fade-in py-8">
+
+    <!-- ===== PROFILE HEADER ===== -->
+    <div class="tech-card bg-black/40 relative mb-12 shadow-xl border border-white/5 rounded-2xl overflow-hidden">
+        
+        <div class="profile-header p-8 relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-left">
+            <!-- Avatar -->
+            <div class="relative shrink-0">
+                {% if profile_user.profile.profile_picture and profile_user.profile.profile_picture.name != 'default.jpg' %}
+                <img src="{{ profile_user.profile.profile_picture.url }}" class="w-32 h-32 rounded-full border-2 border-white/10 relative z-10 object-cover bg-black shadow-2xl">
+                {% else %}
+                <div class="w-32 h-32 rounded-full border-2 border-white/10 bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center font-display text-5xl text-white font-bold shadow-2xl">
+                    {{ profile_user.username.0|upper }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Details -->
+            <div class="flex-1 w-full flex flex-col justify-center h-full pt-2">
+                <div class="flex flex-wrap items-start justify-between gap-4 w-full">
+                    <div class="mx-auto md:mx-0">
+                        <div class="font-sans text-gray-400 text-sm tracking-widest mb-1.5 uppercase font-medium">Profile</div>
+                        <h1 class="font-display text-4xl font-semibold text-white tracking-tight mb-2">
+                            {{ profile_user.get_full_name|default:profile_user.username }}
+                        </h1>
+                        <div class="font-sans text-gray-400 text-[13px] tracking-wide mb-4">
+                            Status: <span class="text-green-500 font-medium">Active</span> &middot; Joined {{ profile_user.date_joined|date:"M Y" }}
+                        </div>
+                    </div>
+
+                    {% if user == profile_user %}
+                    <a href="{% url 'users:edit_profile' %}" class="btn-neural px-5 py-2.5 font-sans font-medium text-sm rounded-xl mx-auto md:mx-0">
+                        Edit Profile
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 w-full text-center md:text-left">
+                    <div class="font-sans text-sm bg-white/5 rounded-lg p-3 border border-white/5">
+                        <span class="text-gray-400 block mb-1 text-xs uppercase tracking-wide font-semibold">Email</span>
+                        <span class="text-white">{{ profile_user.email|default:"Not Provided" }}</span>
+                    </div>
+                    {% if profile_user.profile.location %}
+                    <div class="font-sans text-sm bg-white/5 rounded-lg p-3 border border-white/5">
+                        <span class="text-gray-400 block mb-1 text-xs uppercase tracking-wide font-semibold">Location</span>
+                        <span class="text-white">{{ profile_user.profile.location }}</span>
+                    </div>
+                    {% endif %}
+                    {% if profile_user.profile.phone %}
+                    <div class="font-sans text-sm bg-white/5 rounded-lg p-3 border border-white/5">
+                        <span class="text-gray-400 block mb-1 text-xs uppercase tracking-wide font-semibold">Phone</span>
+                        <span class="text-white">{{ profile_user.profile.phone }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if profile_user.profile.bio %}
+                <div class="mt-6 border border-white/5 rounded-xl bg-black/20 p-5 font-sans text-sm text-gray-300 leading-relaxed shadow-inner">
+                    <span class="font-sans text-gray-400 text-xs font-semibold uppercase tracking-wide block mb-2">Bio</span>
+                    {{ profile_user.profile.bio }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SPEC DATA (Skills) ===== -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="font-sans text-xl text-white font-semibold">Skills & Interests</h2>
+        {% if user == profile_user %}
+        <a href="{% url 'users:add_skill' %}" class="nav-capsule border-orange-500/50 text-orange-400 hover:bg-orange-500 hover:text-white transition-colors">
+            <i class="fas fa-plus mr-1"></i> Add Skill
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+        
+        <!-- TEACH MATRIX -->
+        <div>
+            <div class="font-sans text-gray-400 font-semibold text-sm uppercase tracking-wide border-b border-white/10 pb-2 mb-4">
+                Can Teach
+            </div>
+            
+            {% if teaching_skills %}
+            <div class="tech-card bg-black/20 border border-white/5 p-2 rounded-xl">
+                {% for skill in teaching_skills %}
+                <div class="spec-row p-4 hover:bg-white/5 transition-colors group relative rounded-lg border-b border-white/5 last:border-b-0">
+                    <div class="flex-1 pr-16">
+                        <div class="flex items-center gap-3 mb-1.5">
+                            <h3 class="font-sans font-semibold text-white text-[15px]">{{ skill.name }}</h3>
+                            <span class="nav-capsule !text-[10px] !px-2 !py-0.5 border-orange-500/50 text-orange-400">
+                                {{ skill.get_level_display }}
+                            </span>
+                        </div>
+                        {% if skill.description %}
+                        <p class="font-sans text-sm text-gray-400 mb-2">{{ skill.description }}</p>
+                        {% endif %}
+                        <div class="font-sans text-[11px] font-medium text-gray-500 uppercase tracking-widest mt-1">Category: {{ skill.get_skill_type_display }}</div>
+                    </div>
+
+                    {% if user == profile_user %}
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <form method="post" action="{% url 'users:delete_skill' skill.pk %}" onsubmit="return confirm('Are you sure you want to delete this skill?');">
+                            {% csrf_token %}
+                            <button type="submit" class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="font-sans text-sm text-gray-500 p-6 text-center border border-white/5 rounded-xl bg-black/20">
+                No teaching skills listed.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- LEARN MATRIX -->
+        <div>
+            <div class="font-sans text-gray-400 font-semibold text-sm uppercase tracking-wide border-b border-white/10 pb-2 mb-4">
+                Wants to Learn
+            </div>
+            
+            {% if learning_interests %}
+            <div class="tech-card bg-black/20 border border-white/5 p-2 rounded-xl">
+                {% for interest in learning_interests %}
+                <div class="spec-row p-4 hover:bg-white/5 transition-colors group relative rounded-lg border-b border-white/5 last:border-b-0">
+                    <div class="flex-1 pr-16">
+                        <div class="flex items-center gap-3 mb-1.5">
+                            <h3 class="font-sans font-semibold text-white text-[15px]">{{ interest.name }}</h3>
+                            <span class="nav-capsule !text-[10px] !px-2 !py-0.5 border-red-500/50 text-red-400">
+                                {{ interest.get_level_display }}
+                            </span>
+                        </div>
+                        {% if interest.description %}
+                        <p class="font-sans text-sm text-gray-400 mb-2">{{ interest.description }}</p>
+                        {% endif %}
+                        <div class="font-sans text-[11px] font-medium text-gray-500 uppercase tracking-widest mt-1">Category: {{ interest.get_skill_type_display }}</div>
+                    </div>
+
+                    {% if user == profile_user %}
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <form method="post" action="{% url 'users:delete_skill' interest.pk %}" onsubmit="return confirm('Are you sure you want to delete this interest?');">
+                            {% csrf_token %}
+                            <button type="submit" class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="font-sans text-sm text-gray-500 p-6 text-center border border-white/5 rounded-xl bg-black/20">
+                No learning interests listed.
+            </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

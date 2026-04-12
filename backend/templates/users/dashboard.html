@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | {{ user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Subtle profile shadow */
+    .profile-avatar {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid lg:grid-cols-12 gap-8 lg:gap-12 animate-fade-in pb-20">
+
+    <!-- ===== Left Module: Profile Overview ===== -->
+    <div class="lg:col-span-4">
+        <h3 class="font-sans font-semibold text-gray-400 text-sm tracking-wide mb-4 uppercase">Profile Overview</h3>
+        
+        <div class="tech-card p-6">
+            <!-- Avatar & Status -->
+            <div class="flex items-center gap-6 mb-8">
+                <div class="flex-shrink-0">
+                    {% if user.profile.profile_picture and user.profile.profile_picture.name != 'default.jpg' %}
+                    <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" class="w-20 h-20 rounded-full object-cover profile-avatar border-2 border-white/10">
+                    {% else %}
+                    <div class="w-20 h-20 rounded-full border-2 border-white/10 bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center font-display text-3xl text-white font-bold profile-avatar">
+                        {{ user.username.0|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h2 class="font-display text-xl font-bold text-white tracking-tight leading-tight mb-1">
+                        {{ user.get_full_name|default:user.username }}
+                    </h2>
+                    <div class="font-sans text-sm text-gray-400 mb-2">@{{ user.username }}</div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                        <span class="font-sans text-xs font-medium text-green-500 uppercase tracking-widest">Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-px bg-white/5 w-full mb-6"></div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-black/20 rounded-xl p-4 text-center">
+                    <div class="font-display text-2xl font-bold text-orange-500 mb-1">{{ teaching_skills.count|default:"0" }}</div>
+                    <div class="font-sans text-[10px] uppercase font-semibold text-gray-500 tracking-wider">Teaching</div>
+                </div>
+                <div class="bg-black/20 rounded-xl p-4 text-center">
+                    <div class="font-display text-2xl font-bold text-red-500 mb-1">{{ learning_interests.count|default:"0" }}</div>
+                    <div class="font-sans text-[10px] uppercase font-semibold text-gray-500 tracking-wider">Learning</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col gap-3">
+                <a href="{% url 'users:profile' %}" class="btn-neural text-center py-3 font-sans font-medium text-sm rounded-xl">
+                    View Public Profile
+                </a>
+                <a href="{% url 'users:edit_profile' %}" class="text-center py-3 rounded-xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 font-sans font-medium text-sm transition-colors">
+                    Edit Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Right Module: Database & Network ===== -->
+    <div class="lg:col-span-8 flex flex-col gap-10">
+        
+        <!-- TEACHING SKILLS -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-sans font-semibold text-gray-400 text-sm tracking-wide uppercase">Skills I Teach</h3>
+                <a href="{% url 'users:add_skill' %}" class="text-orange-500 hover:text-orange-400 font-sans font-medium text-sm transition-colors flex items-center gap-2">
+                    <i class="fas fa-plus text-xs"></i> Add Skill
+                </a>
+            </div>
+
+            {% if teaching_skills %}
+            <div class="tech-card p-2">
+                {% for skill in teaching_skills %}
+                <div class="spec-row px-4 group hover:bg-white/5 transition-colors rounded-lg flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="font-sans font-semibold text-white text-[15px]">{{ skill.skill_name }}</span>
+                            <div class="nav-capsule !px-2 !py-0.5 border-orange-500/50 text-orange-400 !text-[10px]">
+                                {% if skill.is_tech %}Technical{% else %}Non-Technical{% endif %}
+                            </div>
+                        </div>
+                        <div class="font-sans text-sm text-gray-400">
+                            <span class="text-gray-300 font-medium">{{ skill.get_skill_level_display }}</span> &middot; {{ skill.description|truncatewords:15 }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="font-sans text-sm text-gray-500 border border-white/5 rounded-xl p-8 text-center bg-black/20">
+                You haven't listed any skills to teach yet. <br> <a href="{% url 'users:add_skill' %}" class="text-orange-500 mt-2 inline-block font-medium">Add your first skill</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- LEARNING INTERESTS -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-sans font-semibold text-gray-400 text-sm tracking-wide uppercase">Skills I'm Learning</h3>
+                <a href="{% url 'users:add_skill' %}" class="text-orange-500 hover:text-orange-400 font-sans font-medium text-sm transition-colors flex items-center gap-2">
+                    <i class="fas fa-plus text-xs"></i> Add Interest
+                </a>
+            </div>
+
+            {% if learning_interests %}
+            <div class="tech-card p-2">
+                {% for interest in learning_interests %}
+                <div class="spec-row px-4 group hover:bg-white/5 transition-colors rounded-lg flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="font-sans font-semibold text-white text-[15px]">{{ interest.skill_name }}</span>
+                            <div class="nav-capsule !px-2 !py-0.5 border-red-500/50 text-red-400 !text-[10px]">
+                                {% if interest.is_tech %}Technical{% else %}Non-Technical{% endif %}
+                            </div>
+                        </div>
+                        <div class="font-sans text-sm text-gray-400">
+                            {{ interest.description|truncatewords:15 }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="font-sans text-sm text-gray-500 border border-white/5 rounded-xl p-8 text-center bg-black/20">
+                You aren't looking to learn anything new right now. <br> <a href="{% url 'users:add_skill' %}" class="text-orange-500 mt-2 inline-block font-medium">Add a learning interest</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- RECENT NETWORK MATCHES -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-sans font-semibold text-gray-400 text-sm tracking-wide uppercase">Potential Matches</h3>
+                <a href="{% url 'dashboard:browse_skills' %}" class="text-orange-500 hover:text-orange-400 font-sans font-medium text-sm transition-colors flex items-center gap-2">
+                    Browse All <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+
+            {% if potential_matches %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for skill in potential_matches|slice:":4" %}
+                <div class="tech-card p-4 flex items-center justify-between group cursor-default">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center font-display text-white text-lg font-bold bg-gradient-to-br from-gray-800 to-black">
+                            {{ skill.user.username.0|upper }}
+                        </div>
+                        <div>
+                            <div class="font-sans font-semibold text-white">{{ skill.user.username }}</div>
+                            <div class="font-sans text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Available to connect
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'dashboard:browse_skills' %}" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-orange-500 transition-colors">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="font-sans text-sm text-gray-500 border border-white/5 rounded-xl p-8 text-center bg-black/20">
+                No potential matches found at this time. We will notify you when a compatible user joins!
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

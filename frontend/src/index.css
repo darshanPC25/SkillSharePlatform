@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+  
+  --color-neural-glow: #ea580c;
+  --color-neural-core: #c2410c;
+  --color-neural-sys: #7f1d1d;
+  --color-neural-bg: #050300;
+  
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-pulse-glow: pulseGlow 4s ease-in-out infinite;
+  --animate-slide-up: slideUp 0.6s ease-out forwards;
+  
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.8; filter: blur(100px); }
+    50% { opacity: 1; filter: blur(120px); }
+  }
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Hide default cursor on desktop since we have a custom animated one */
+@media (min-width: 768px) {
+  * {
+    cursor: none !important;
+  }
+}
+
+/* Core setup */
+body {
+  background-color: var(--color-neural-bg);
+  color: #d1d5db; /* gray-300 */
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Custom Text Selection */
+::selection {
+  background: rgba(234, 88, 12, 0.4);
+  color: #ffffff;
+}
+::-moz-selection {
+  background: rgba(234, 88, 12, 0.4);
+  color: #ffffff;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-neural-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(234, 88, 12, 0.5);
+}
+
+/* Base Glassmorphism utility */
+.tech-card {
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.6), rgba(10, 10, 10, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+  transform: skewX(-20deg);
+  transition: all 0.7s ease;
+}
+
+.tech-card:hover {
+  border-color: rgba(234, 88, 12, 0.3);
+  box-shadow: 0 12px 40px rgba(234, 88, 12, 0.15);
+  transform: translateY(-4px);
+}
+
+.tech-card:hover::before {
+  left: 150%;
+}
+
+/* Tech Buttons */
+.btn-neural {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  overflow: hidden;
+}
+.btn-neural:hover {
+  background: linear-gradient(135deg, rgba(234,88,12,0.15) 0%, rgba(255,255,255,0.05) 100%);
+  border-color: rgba(234, 88, 12, 0.4);
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.2);
+}
+
+/* Tech Inputs */
+.tech-input {
+  background: rgba(15, 15, 15, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.tech-input:focus {
+  border-color: rgba(234, 88, 12, 0.6) !important;
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.15) !important;
+  outline: none;
+  background: rgba(20, 20, 20, 0.8) !important;
+}
