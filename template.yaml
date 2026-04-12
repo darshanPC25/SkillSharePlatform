@@ -33,27 +33,11 @@ Resources:
       CodeUri: backend/
       Handler: skill_swap.lambda_handler.lambda_handler
       Events:
-        # Standard REST API
+        # Standard REST API (handles all /api/* routes)
         HttpApiEvent:
           Type: HttpApi
           Properties:
             ApiId: !Ref SkillSwapHttpApi
-        # WebSocket API routes
-        WSConnectEvent:
-          Type: ApiGatewayV2
-          Properties:
-            ApiId: !Ref SkillSwapWebSocketApi
-            RouteKey: $connect
-        WSDisconnectEvent:
-          Type: ApiGatewayV2
-          Properties:
-            ApiId: !Ref SkillSwapWebSocketApi
-            RouteKey: $disconnect
-        WSDefaultEvent:
-          Type: ApiGatewayV2
-          Properties:
-            ApiId: !Ref SkillSwapWebSocketApi
-            RouteKey: $default
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref WebSocketConnectionsTable
@@ -62,6 +46,15 @@ Resources:
               Action:
                 - 'execute-api:ManageConnections'
               Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SkillSwapWebSocketApi}/*'
+
+  # Allow WebSocket API Gateway to invoke Lambda
+  WebSocketLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt SkillSwapFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SkillSwapWebSocketApi}/*'
 
   # --- API Gateways ---
   SkillSwapHttpApi:
