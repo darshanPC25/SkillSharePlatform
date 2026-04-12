@@ -150,7 +150,7 @@ Resources:
 Outputs:
   HttpApiUrl:
     Description: "Base URL of your REST API"
-    Value: !Sub "https://${SkillSwapHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+    Value: !Sub "https://${SkillSwapHttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   WebSocketApiUrl:
     Description: "Base URL of your WebSocket API"
     Value: !Sub "wss://${SkillSwapWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
