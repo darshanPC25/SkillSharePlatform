@@ -3,11 +3,12 @@ import axios from 'axios';
 const isProduction = !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
 
 export const API_BASE_URL = isProduction 
-    ? 'https://s16ga5gsci.execute-api.ap-south-1.amazonaws.com/Prod/api/' 
+    ? `${window.location.origin}/api/`
     : 'http://127.0.0.1:8000/api/';
 
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 export const WS_BASE_URL = isProduction
-    ? 'wss://ye9jt6fi9k.execute-api.ap-south-1.amazonaws.com/Prod'
+    ? `${wsProtocol}//${window.location.host}/ws`
     : 'ws://127.0.0.1:8000/ws';
 
 const api = axios.create({

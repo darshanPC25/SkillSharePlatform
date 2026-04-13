@@ -23,8 +23,6 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
     if origin.strip()
 ]
-# Add AWS API Gateway domains to trusted origins
-CSRF_TRUSTED_ORIGINS += ['https://*.execute-api.*.amazonaws.com']
 
 INSTALLED_APPS = [
     'daphne',
@@ -80,7 +78,10 @@ ASGI_APPLICATION = 'skill_swap.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(os.environ.get('REDIS_HOST', 'redis'), 6379)],
+        },
     }
 }
 
@@ -94,8 +95,8 @@ DATABASES = {
 if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.parse(
         os.environ['DATABASE_URL'],
-        conn_max_age=0,
-        ssl_require=True,
+        conn_max_age=600,
+        ssl_require=os.environ.get('DB_SSL_REQUIRE', 'False').lower() == 'true',
     )
 
 AUTH_PASSWORD_VALIDATORS = [
