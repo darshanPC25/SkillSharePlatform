@@ -48,7 +48,7 @@ export function useWebRTC(roomId) {
       // In production (AWS), we use query parameters for room identification.
       // In local (Daphne), we use the traditional path-based URL.
       const wsUrl = isProd 
-        ? `${WS_BASE_URL}/?room_id=${roomId}&token=${token}`
+        ? `${WS_BASE_URL}/video/${roomId}/?token=${token}`
         : `ws://127.0.0.1:8000/ws/video/${roomId}/?token=${token}`;
         
       ws.current = new WebSocket(wsUrl);
