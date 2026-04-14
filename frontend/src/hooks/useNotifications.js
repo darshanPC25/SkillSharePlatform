@@ -65,7 +65,10 @@ export function useNotifications() {
     const token = localStorage.getItem('access_token');
     if (!token || !room?.name) return;
 
-    const wsUrl = `${WS_BASE_URL}/?room_id=${room.name}&token=${token}&user_id=${room.other_user?.id || 'unknown'}`;
+    const isProd = !window.location.hostname.includes('localhost');
+    const wsUrl = isProd 
+      ? `${WS_BASE_URL}/chat/${room.name}/?token=${token}`
+      : `ws://127.0.0.1:8000/ws/chat/${room.name}/?token=${token}`;
     const socket = new WebSocket(wsUrl);
 
     socket.onmessage = (e) => {
@@ -128,7 +131,10 @@ export function useNotifications() {
     intentionalClose.current = false;
 
     function createSocket() {
-      const wsUrl = `${WS_BASE_URL}/?room_id=notifications&token=${token}`;
+      const isProd = !window.location.hostname.includes('localhost');
+      const wsUrl = isProd
+        ? `${WS_BASE_URL}/notifications/?token=${token}`
+        : `ws://127.0.0.1:8000/ws/notifications/?token=${token}`;
       const socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {
