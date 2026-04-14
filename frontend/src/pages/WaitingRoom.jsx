@@ -36,7 +36,7 @@ export function WaitingRoom() {
           const token = localStorage.getItem('access_token');
           const isProd = !window.location.hostname.includes('localhost');
           const wsUrl = isProd
-            ? `${WS_BASE_URL}/?room_id=waiting_${roomId}&token=${token}`
+            ? `${WS_BASE_URL}/waiting/${roomId}/?token=${token}`
             : `ws://127.0.0.1:8000/ws/waiting/${roomId}/?token=${token}`;
           const ws = new WebSocket(wsUrl);
           wsRef.current = ws;
@@ -82,7 +82,7 @@ export function WaitingRoom() {
   function connectToRoomAndKnock(roomId, user, token) {
     const isProd = !window.location.hostname.includes('localhost');
     const knockUrl = isProd
-      ? `${WS_BASE_URL}/?room_id=${roomId}&token=${token}`
+      ? `${WS_BASE_URL}/video/${roomId}/?token=${token}`
       : `ws://127.0.0.1:8000/ws/video/${roomId}/?token=${token}`;
     const knockWs = new WebSocket(knockUrl);
     knockWs.onopen = () => {

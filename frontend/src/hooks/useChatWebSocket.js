@@ -17,10 +17,10 @@ export function useChatWebSocket(roomName, { onNewMessage } = {}) {
     const token = localStorage.getItem('access_token');
     const isProd = !window.location.hostname.includes('localhost');
     
-    // In production (AWS), we use query parameters for room identification.
-    // In local (Daphne), we use the traditional path-based URL.
+    // In production (AWS), use path-based URL behind Nginx proxy.
+    // In local (Daphne), we use the traditional path-based URL directly on port 8000.
     const wsUrl = isProd 
-      ? `${WS_BASE_URL}/?room_id=${roomName}&token=${token}`
+      ? `${WS_BASE_URL}/chat/${roomName}/?token=${token}`
       : `ws://127.0.0.1:8000/ws/chat/${roomName}/?token=${token}`;
 
     ws.current = new WebSocket(wsUrl);

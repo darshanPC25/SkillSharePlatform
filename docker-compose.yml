@@ -32,6 +32,7 @@ services:
              daphne -b 0.0.0.0 -p 8000 skill_swap.asgi:application"
     volumes:
       - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DATABASE_URL=postgres://skillswap_user:${DB_PASSWORD:-supersecretpassword}@db:5432/skillswap
       - REDIS_HOST=redis
