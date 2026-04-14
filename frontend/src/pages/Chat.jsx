@@ -154,7 +154,8 @@ export function Chat() {
       
       {/* Left Pane - Chat List */}
       <GlassCard className="w-1/3 flex flex-col overflow-hidden relative">
-        <div className="p-4 border-b border-white/5 space-y-4">
+        <div className="flex flex-col h-full w-full">
+        <div className="p-4 border-b border-white/5 space-y-4 shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-display font-bold tracking-widest text-white">COMMS HUB</h2>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ea580c]/30 to-red-900/30 flex items-center justify-center text-[#ea580c]">
@@ -234,10 +235,12 @@ export function Chat() {
             )}
           </AnimatePresence>
         </div>
+        </div>
       </GlassCard>
 
       {/* Right Pane - Chat Window */}
       <GlassCard className="flex-1 flex flex-col relative overflow-hidden">
+        <div className="flex flex-col h-full w-full">
         {activeRoom ? (
           <>
             {/* Chat Target Header */}
@@ -341,6 +344,7 @@ export function Chat() {
             </p>
           </div>
         )}
+        </div>
       </GlassCard>
 
     </motion.div>
